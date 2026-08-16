@@ -1,0 +1,25 @@
+{
+  "nav": { "home": "Ahabanza", "about": "Abo turibo", "parishes": "Amaparoki", "groups": "Amatsinda", "announcements": "Amatangazo", "login": "Injira", "register": "Iyandikishe" },
+  "home": {
+    "hero_title": "Diyoseze y'Abanglikani ya Byumba",
+    "hero_subtitle": "Diyoseze imwe, amaparoki menshi, umuryango umwe muri Kristo.",
+    "cta_parishes": "Shakisha paroki yawe",
+    "cta_register": "Iyandikishe nk'umukirisitu",
+    "latest_news": "Amatangazo aheruka",
+    "our_groups": "Amatsinda yacu"
+  },
+  "groups": {
+    "MOTHERS_UNION": "Umuryango w'Ababyeyi (Mothers' Union)",
+    "FATHERS_UNION": "Umuryango w'Ababyeyi b'Abagabo (Fathers' Union)",
+    "YOUTH_UNION": "Urubyiruko (Youth Union)",
+    "CHOIR": "Amatorero",
+    "CHILDREN": "Abana / Sunday School",
+    "GFS": "Umuryango w'Incuti z'Abakobwa (GFS)"
+  },
+  "register": {
+    "title": "Fungura konti yawe y'umukirisitu",
+    "first_name": "Izina ry'idini", "last_name": "Izina ry'umuryango", "username": "Izina ukoresha",
+    "email": "Imeyili", "phone": "Numero ya telefoni", "parish": "Paroki yawe",
+    "password": "Ijambo ry'ibanga", "submit": "Iyandikishe"
+  }
+}

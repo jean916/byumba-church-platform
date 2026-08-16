@@ -1,0 +1,31 @@
+:root {
+  /* Color: evokes Byumba's hills at dusk (indigo), the terraced green
+     hillsides, and the gold used in Anglican liturgical vestments/altar
+     cloths. Deliberately not the cream+terracotta or near-black+neon
+     defaults. */
+  --color-indigo-950: #131B33;
+  --color-indigo-900: #1B2A4A;
+  --color-indigo-700: #2C4270;
+  --color-hill-green: #2F5233;
+  --color-hill-green-light: #4A7A4E;
+  --color-gold: #C9A227;
+  --color-gold-light: #E6C96B;
+  --color-parchment: #EDE7D9;
+  --color-parchment-light: #F5F2E8;
+  --color-ink: #1B2A4A;
+  --color-ink-soft: #4A5568;
+  --color-white: #FFFFFF;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Work Sans', -apple-system, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 40px;
+  --space-5: 64px;
+  --space-6: 96px;
+}

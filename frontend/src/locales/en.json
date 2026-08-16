@@ -1,0 +1,25 @@
+{
+  "nav": { "home": "Home", "about": "About", "parishes": "Parishes", "groups": "Groups", "announcements": "Announcements", "login": "Log in", "register": "Join us", "account": "My Account" },
+  "home": {
+    "hero_title": "Anglican Diocese of Byumba",
+    "hero_subtitle": "One diocese, many parishes, one family in Christ.",
+    "cta_parishes": "Find your parish",
+    "cta_register": "Register as a member",
+    "latest_news": "Latest announcements",
+    "our_groups": "Our groups & unions"
+  },
+  "groups": {
+    "MOTHERS_UNION": "Mothers' Union",
+    "FATHERS_UNION": "Fathers' Union",
+    "YOUTH_UNION": "Youth Union",
+    "CHOIR": "Amatorero (Choir)",
+    "CHILDREN": "Children / Sunday School",
+    "GFS": "Girls' Friendly Society (GFS)"
+  },
+  "register": {
+    "title": "Create your member account",
+    "first_name": "First name", "last_name": "Last name", "username": "Username",
+    "email": "Email", "phone": "Phone number", "parish": "Your parish",
+    "password": "Password", "submit": "Register"
+  }
+}
