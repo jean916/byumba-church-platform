@@ -1,7 +1,3 @@
-# Render Blueprint - defines all three services needed to run this project.
-# When you connect this repo on Render and it detects this file, it offers
-# to create everything below in one step instead of configuring each
-# service by hand.
 databases:
   - name: byumba-db
     plan: free
@@ -9,7 +5,6 @@ databases:
     user: byumba
 
 services:
-  # Django backend (API)
   - type: web
     name: byumba-backend
     runtime: python
@@ -21,23 +16,22 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: ADMIN_USERNAME
-        sync: false  # set manually in Render dashboard - your live admin username
+        sync: false
       - key: ADMIN_PASSWORD
-        sync: false  # set manually in Render dashboard - a strong password
+        sync: false
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false  # set manually: your Render backend URL + real domain once you have one
+        sync: false
       - key: CORS_ALLOWED_ORIGINS
-        sync: false  # set manually: your Render frontend URL + real domain once you have one
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: byumba-db
           property: connectionString
 
-  # React frontend (static site)
   - type: web
     name: byumba-frontend
     runtime: static
@@ -46,7 +40,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false  # set manually: https://byumba-backend.onrender.com/api (your actual backend URL + /api)
+        sync: false
     routes:
       - type: rewrite
         source: /*
