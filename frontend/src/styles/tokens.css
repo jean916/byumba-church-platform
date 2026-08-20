@@ -15,6 +15,7 @@
   --color-ink: #1B2A4A;
   --color-ink-soft: #4A5568;
   --color-white: #FFFFFF;
+  --color-surface: #FFFFFF;
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Work Sans', -apple-system, sans-serif;
@@ -28,4 +29,17 @@
   --space-4: 40px;
   --space-5: 64px;
   --space-6: 96px;
+}
+
+/* Dark mode: swaps the light parchment/white surfaces for dark ones while
+   keeping the same indigo/gold identity - the header/hero already use dark
+   indigo in both modes, so this mainly affects page backgrounds, cards,
+   and text color. Applied via a data-theme attribute on <html> so every
+   component using these variables updates automatically. */
+[data-theme='dark'] {
+  --color-parchment: #1E2436;
+  --color-parchment-light: #161B29;
+  --color-ink: #EDE7D9;
+  --color-ink-soft: #B8BFCC;
+  --color-surface: #232A3D;
 }

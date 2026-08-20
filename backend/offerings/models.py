@@ -22,6 +22,10 @@ class Offering(models.Model):
         CASH = "CASH", "Cash"
 
     parish = models.ForeignKey("dioceses.Parish", on_delete=models.CASCADE, related_name="offerings")
+    campaign = models.ForeignKey(
+        "Campaign", on_delete=models.SET_NULL, null=True, blank=True, related_name="offerings",
+        help_text="Link this contribution to a specific fundraising campaign, if applicable",
+    )
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="offerings"
     )
@@ -41,3 +45,39 @@ class Offering(models.Model):
 
     def __str__(self):
         return f"{self.amount_rwf} RWF - {self.get_purpose_display()} ({self.parish.name})"
+
+
+class Campaign(models.Model):
+    """A fundraising goal - e.g. 'Building Fund 2026'. Publicly shows a
+    progress bar (target vs. raised so far) and payment instructions.
+    Doesn't process payments automatically (no merchant account yet) -
+    people pay via MoMo/bank/cash on their own, then confirm via the public
+    form below, which creates an Offering linked to this campaign."""
+
+    diocese = models.ForeignKey("dioceses.Diocese", on_delete=models.CASCADE, related_name="campaigns")
+    parish = models.ForeignKey(
+        "dioceses.Parish", on_delete=models.CASCADE, related_name="campaigns",
+        null=True, blank=True, help_text="Leave blank for a diocese-wide campaign",
+    )
+    title = models.CharField(max_length=250)
+    description = models.TextField(blank=True)
+    target_amount_rwf = models.DecimalField(max_digits=14, decimal_places=2)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    # Payment instructions shown publicly - same idea as the general
+    # offerings page, but specific to this campaign/project.
+    momo_code = models.CharField(max_length=50, blank=True, help_text="MTN MoMo Pay code")
+    airtel_code = models.CharField(max_length=50, blank=True, help_text="Airtel Money code")
+    bank_details = models.CharField(max_length=250, blank=True, help_text="Bank name + account number")
+
+    class Meta:
+        ordering = ["-start_date"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def raised_amount_rwf(self):
+        return self.offerings.aggregate(total=models.Sum("amount_rwf"))["total"] or 0

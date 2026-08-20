@@ -135,6 +135,10 @@ export default function AdminGroups() {
   const [photoFile, setPhotoFile] = useState(null)
   const [status, setStatus] = useState('')
   const [managingId, setManagingId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState(emptyForm)
+  const [editPhotoFile, setEditPhotoFile] = useState(null)
+  const [editStatus, setEditStatus] = useState('')
 
   const load = () => client.get('/content/groups/').then(r => setGroups(r.data))
   useEffect(() => {
@@ -170,26 +174,93 @@ export default function AdminGroups() {
 
   const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '10px' }
 
+  const handleEditChange = e => setEditForm({ ...editForm, [e.target.name]: e.target.value })
+
+  const startEdit = g => {
+    setEditingId(g.id)
+    setEditForm({
+      parish: g.parish, group_type: g.group_type, name: g.name,
+      description: g.description, leader_name: g.leader_name, leader_contact: g.leader_contact,
+    })
+    setEditPhotoFile(null)
+    setEditStatus('')
+    setManagingId(null)
+  }
+
+  const cancelEdit = () => { setEditingId(null); setEditStatus('') }
+
+  const handleEditSubmit = async e => {
+    e.preventDefault()
+    setEditStatus('saving')
+    try {
+      const data = new FormData()
+      Object.entries(editForm).forEach(([k, v]) => data.append(k, v))
+      if (editPhotoFile) data.append('photo', editPhotoFile)
+      await client.patch(`/content/groups/${editingId}/`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setEditingId(null)
+      load()
+    } catch {
+      setEditStatus('error')
+    }
+  }
+
   return (
     <div>
       <h1>Groups</h1>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
         {groups.map(g => (
           <div key={g.id} className="card">
-            {g.photo && (
-              <img src={g.photo} alt={g.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '6px', marginBottom: '10px' }} />
+            {editingId === g.id ? (
+              <form onSubmit={handleEditSubmit}>
+                <label>Parish</label>
+                <select style={inputStyle} name="parish" value={editForm.parish} onChange={handleEditChange} required>
+                  {parishes.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <label>Group type</label>
+                <select style={inputStyle} name="group_type" value={editForm.group_type} onChange={handleEditChange}>
+                  {GROUP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <label>Name</label>
+                <input style={inputStyle} name="name" value={editForm.name} onChange={handleEditChange} required />
+                <label>Description</label>
+                <input style={inputStyle} name="description" value={editForm.description} onChange={handleEditChange} />
+                <label>{editForm.group_type === 'CHOIR' ? 'President name' : 'Leader name'}</label>
+                <input style={inputStyle} name="leader_name" value={editForm.leader_name} onChange={handleEditChange} />
+                <label>{editForm.group_type === 'CHOIR' ? 'President contact' : 'Leader contact'}</label>
+                <input style={inputStyle} name="leader_contact" value={editForm.leader_contact} onChange={handleEditChange} />
+                <label>Replace cover photo (optional)</label>
+                <input style={inputStyle} type="file" accept="image/*" onChange={e => setEditPhotoFile(e.target.files[0])} />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-gold" type="submit" disabled={editStatus === 'saving'} style={{ padding: '6px 14px', fontSize: '0.85rem' }}>Save</button>
+                  <button type="button" onClick={cancelEdit} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>Cancel</button>
+                </div>
+                {editStatus === 'error' && <p style={{ color: 'crimson', fontSize: '0.85rem' }}>Something went wrong.</p>}
+              </form>
+            ) : (
+              <>
+                {g.photo && (
+                  <img src={g.photo} alt={g.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '6px', marginBottom: '10px' }} />
+                )}
+                <h3 style={{ margin: 0 }}>{g.name}</h3>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type}</p>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type === 'CHOIR' ? 'President' : 'Leader'}: {g.leader_name}</p>
+                {g.group_type === 'CHOIR' && (
+                  <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>
+                    {g.members_list?.length || 0} members · {g.songs?.length || 0} songs · {g.photos?.length || 0} photos
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                  <button onClick={() => setManagingId(managingId === g.id ? null : g.id)} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>
+                    {managingId === g.id ? 'Hide details' : 'Manage'}
+                  </button>
+                  <button onClick={() => startEdit(g)} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>
+                    Edit
+                  </button>
+                </div>
+              </>
             )}
-            <h3 style={{ margin: 0 }}>{g.name}</h3>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type}</p>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type === 'CHOIR' ? 'President' : 'Leader'}: {g.leader_name}</p>
-            {g.group_type === 'CHOIR' && (
-              <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>
-                {g.members_list?.length || 0} members · {g.songs?.length || 0} songs · {g.photos?.length || 0} photos
-              </p>
-            )}
-            <button onClick={() => setManagingId(managingId === g.id ? null : g.id)} className="btn btn-outline" style={{ marginTop: '10px', color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>
-              {managingId === g.id ? 'Hide details' : 'Manage members / songs / photos'}
-            </button>
           </div>
         ))}
       </div>

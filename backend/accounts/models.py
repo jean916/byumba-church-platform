@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from core.validators import validate_rwanda_phone
 from django.db import models
 
 
@@ -18,7 +19,7 @@ class User(AbstractUser):
         MEMBER = "MEMBER", "Member (Christian)"
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
-    phone_number = models.CharField(max_length=20, blank=True)
+    phone_number = models.CharField(max_length=10, blank=True, validators=[validate_rwanda_phone])
     preferred_language = models.CharField(
         max_length=2, choices=[("rw", "Kinyarwanda"), ("en", "English")], default="rw"
     )

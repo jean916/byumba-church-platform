@@ -1,33 +1,19 @@
-# Dependencies
-node_modules/
-
-# Python virtual environments
-venv/
-.venv/
-
-# Python cache
-__pycache__/
-*.py[cod]
-
-# Environment variables / secrets
-.env
-.env.*
+# Environment secrets - never commit these
+backend/.env
+*.env
 !.env.example
 
-# Next.js
-.next/
-out/
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/migrations/__pycache__/
+backend/db.sqlite3
+backend/media/
 
-# Build files
-dist/
-build/
+# Node
+frontend/node_modules/
+frontend/dist/
 
-# macOS
+# OS
 .DS_Store
-
-# Logs
-*.log
-
-# IDE/editor files
-.vscode/
-.idea/

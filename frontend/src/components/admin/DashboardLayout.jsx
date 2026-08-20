@@ -24,7 +24,11 @@ export default function DashboardLayout() {
           <NavLink to="/admin/parishes" style={linkStyle}>Parishes</NavLink>
           <NavLink to="/admin/groups" style={linkStyle}>Groups</NavLink>
           <NavLink to="/admin/announcements" style={linkStyle}>Announcements</NavLink>
+          <NavLink to="/admin/events" style={linkStyle}>Events</NavLink>
+          <NavLink to="/admin/sermons" style={linkStyle}>Sermons</NavLink>
+          <NavLink to="/admin/leadership" style={linkStyle}>Leadership</NavLink>
           <NavLink to="/admin/offerings" style={linkStyle}>Offerings</NavLink>
+          <NavLink to="/admin/campaigns" style={linkStyle}>Campaigns</NavLink>
         </nav>
         <button onClick={logout} className="btn btn-outline" style={{ marginTop: '24px', color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', width: '100%' }}>
           Log out

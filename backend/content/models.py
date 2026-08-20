@@ -1,3 +1,4 @@
+from core.validators import validate_image_file
 from django.db import models
 
 
@@ -21,7 +22,7 @@ class Group(models.Model):
     description = models.TextField(blank=True)
     leader_name = models.CharField(max_length=200, blank=True)
     leader_contact = models.CharField(max_length=100, blank=True)
-    photo = models.ImageField(upload_to="groups/photos/", null=True, blank=True)
+    photo = models.ImageField(upload_to="groups/photos/", null=True, blank=True, validators=[validate_image_file])
 
     def __str__(self):
         return f"{self.name} - {self.parish.name}"
@@ -61,7 +62,7 @@ class GroupPhoto(models.Model):
     cover image) since choirs specifically wanted multiple pictures."""
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to="groups/gallery/")
+    image = models.ImageField(upload_to="groups/gallery/", validators=[validate_image_file])
     caption = models.CharField(max_length=250, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -108,3 +109,29 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title_en
+
+
+class Sermon(models.Model):
+    """A sermon record - can be text (typed out), a video link (e.g. YouTube),
+    an audio link, or any combination. Not a file upload for audio/video since
+    hosting large media files isn't practical for a small church server -
+    linking to YouTube/SoundCloud/etc. is more sustainable."""
+
+    parish = models.ForeignKey(
+        "dioceses.Parish", on_delete=models.CASCADE, related_name="sermons",
+        null=True, blank=True, help_text="Leave blank for a diocese-wide sermon",
+    )
+    diocese = models.ForeignKey("dioceses.Diocese", on_delete=models.CASCADE, related_name="sermons")
+    title = models.CharField(max_length=250)
+    preacher_name = models.CharField(max_length=200, blank=True)
+    date_preached = models.DateField()
+    scripture_reference = models.CharField(max_length=200, blank=True, help_text="e.g. John 3:16-21")
+    summary = models.TextField(blank=True)
+    video_url = models.URLField(blank=True)
+    audio_url = models.URLField(blank=True)
+
+    class Meta:
+        ordering = ["-date_preached"]
+
+    def __str__(self):
+        return self.title

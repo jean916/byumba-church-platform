@@ -6,6 +6,7 @@ export default function Register() {
   const { t } = useTranslation()
   const [parishes, setParishes] = useState([])
   const [status, setStatus] = useState(null)
+  const [errorMsg, setErrorMsg] = useState('')
   const [form, setForm] = useState({
     first_name: '', last_name: '', username: '', email: '',
     phone_number: '', parish: '', password: '',
@@ -15,16 +16,36 @@ export default function Register() {
     client.get('/dioceses/parishes/').then(r => setParishes(r.data)).catch(() => {})
   }, [])
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    // Phone: digits only, capped at 10 characters as typed - matches the
+    // backend's Rwandan phone format (07XXXXXXXX) so the field can't even
+    // physically hold an invalid length.
+    if (name === 'phone_number') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
+      setForm({ ...form, phone_number: digitsOnly })
+      return
+    }
+    setForm({ ...form, [name]: value })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
+    setErrorMsg('')
     try {
       await client.post('/accounts/register/', form)
       setStatus('success')
     } catch (err) {
       setStatus('error')
+      const data = err?.response?.data
+      if (data) {
+        const firstField = Object.keys(data)[0]
+        const firstMessage = Array.isArray(data[firstField]) ? data[firstField][0] : data[firstField]
+        setErrorMsg(firstMessage || 'Something went wrong — please check the fields and try again.')
+      } else {
+        setErrorMsg('Something went wrong — please check the fields and try again.')
+      }
     }
   }
 
@@ -46,7 +67,15 @@ export default function Register() {
           <label>{t('register.email')}</label>
           <input style={inputStyle} type="email" name="email" value={form.email} onChange={handleChange} />
           <label>{t('register.phone')}</label>
-          <input style={inputStyle} name="phone_number" value={form.phone_number} onChange={handleChange} />
+          <input
+            style={inputStyle}
+            name="phone_number"
+            value={form.phone_number}
+            onChange={handleChange}
+            placeholder="07XXXXXXXX"
+            inputMode="numeric"
+            maxLength={10}
+          />
           <label>{t('register.parish')}</label>
           <select style={inputStyle} name="parish" value={form.parish} onChange={handleChange} required>
             <option value="">—</option>
@@ -57,7 +86,7 @@ export default function Register() {
           <button className="btn btn-gold" type="submit" disabled={status === 'loading'}>
             {t('register.submit')}
           </button>
-          {status === 'error' && <p style={{ color: 'crimson' }}>Something went wrong — please check the fields and try again.</p>}
+          {status === 'error' && <p style={{ color: 'crimson' }}>{errorMsg}</p>}
         </form>
       )}
     </div>

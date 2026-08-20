@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Offering
+from .models import Offering, Campaign
 
 
 class OfferingSerializer(serializers.ModelSerializer):
@@ -18,3 +18,17 @@ class OfferingTotalSerializer(serializers.Serializer):
     period = serializers.CharField()
     purpose = serializers.CharField()
     total_rwf = serializers.DecimalField(max_digits=14, decimal_places=2)
+
+
+class CampaignSerializer(serializers.ModelSerializer):
+    # Read-only computed total - safe to expose publicly since it's an
+    # aggregate, same privacy principle as the offerings totals endpoint.
+    raised_amount_rwf = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id", "diocese", "parish", "title", "description", "target_amount_rwf",
+            "raised_amount_rwf", "start_date", "end_date", "is_active",
+            "momo_code", "airtel_code", "bank_details",
+        ]

@@ -2,11 +2,13 @@ import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useDiocese } from '../context/DioceseContext'
+import { useTheme } from '../context/ThemeContext'
 
 export default function Navbar() {
   const { t, i18n } = useTranslation()
   const { user, isAdmin } = useAuth()
   const diocese = useDiocese()
+  const { theme, toggleTheme } = useTheme()
 
   const switchLang = (lang) => {
     i18n.changeLanguage(lang)
@@ -35,6 +37,9 @@ export default function Navbar() {
           <NavLink to="/parishes" style={linkStyle}>{t('nav.parishes')}</NavLink>
           <NavLink to="/groups" style={linkStyle}>{t('nav.groups')}</NavLink>
           <NavLink to="/announcements" style={linkStyle}>{t('nav.announcements')}</NavLink>
+          <NavLink to="/events" style={linkStyle}>Events</NavLink>
+          <NavLink to="/sermons" style={linkStyle}>Sermons</NavLink>
+          <NavLink to="/give" style={linkStyle}>Give</NavLink>
           {user ? (
             <NavLink to={isAdmin ? '/admin' : '/account'} style={linkStyle}>
               {isAdmin ? 'Admin' : 'My Account'}
@@ -51,6 +56,14 @@ export default function Navbar() {
             <button onClick={() => switchLang('rw')} aria-label="Kinyarwanda" style={{ background: 'none', border: 'none', color: 'var(--color-white)', opacity: i18n.language === 'rw' ? 1 : 0.5, fontWeight: 700 }}>RW</button>
             <button onClick={() => switchLang('en')} aria-label="English" style={{ background: 'none', border: 'none', color: 'var(--color-white)', opacity: i18n.language === 'en' ? 1 : 0.5, fontWeight: 700 }}>EN</button>
           </div>
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '6px', color: 'var(--color-white)', padding: '4px 8px', fontSize: '1rem', lineHeight: 1, marginLeft: '4px' }}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
         </nav>
       </div>
     </header>

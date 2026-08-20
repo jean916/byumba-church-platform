@@ -21,7 +21,9 @@ export default function Home() {
   return (
     <>
       <section style={{
-        background: `linear-gradient(160deg, var(--color-indigo-950) 0%, var(--color-indigo-900) 55%, var(--color-hill-green) 140%)`,
+        background: diocese?.cover_photo
+          ? `linear-gradient(160deg, rgba(19,27,51,0.88) 0%, rgba(27,42,74,0.85) 55%, rgba(47,82,51,0.8) 140%), url(${diocese.cover_photo}) center/cover no-repeat`
+          : `linear-gradient(160deg, var(--color-indigo-950) 0%, var(--color-indigo-900) 55%, var(--color-hill-green) 140%)`,
         color: 'var(--color-white)',
         padding: '96px 24px 72px',
         textAlign: 'center',

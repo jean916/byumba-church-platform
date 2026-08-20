@@ -47,7 +47,7 @@ export default function AdminOfferings() {
       <h1>Offerings</h1>
       <p>Log a contribution someone already paid via Mobile Money, bank transfer, or cash — this keeps a record for reconciliation and reporting. It does not charge anyone automatically.</p>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '10px', overflow: 'hidden', marginBottom: '32px' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden', marginBottom: '32px' }}>
         <thead>
           <tr style={{ background: 'var(--color-indigo-900)', color: 'white', textAlign: 'left' }}>
             <th style={{ padding: '10px 14px' }}>Date</th>

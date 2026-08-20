@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions
-from .models import Group, Announcement, Event, GroupMember, Song, GroupPhoto
+from .models import Group, Announcement, Event, GroupMember, Song, GroupPhoto, Sermon
 from .serializers import (
     GroupSerializer, AnnouncementSerializer, EventSerializer,
-    GroupMemberSerializer, SongSerializer, GroupPhotoSerializer,
+    GroupMemberSerializer, SongSerializer, GroupPhotoSerializer, SermonSerializer,
 )
 
 
@@ -76,6 +76,17 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Event.objects.select_related("parish", "group").all()
+        parish = self.request.query_params.get("parish")
+        if parish:
+            qs = qs.filter(parish__slug=parish)
+        return qs
+
+class SermonViewSet(viewsets.ModelViewSet):
+    serializer_class = SermonSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = Sermon.objects.select_related("parish", "diocese").all()
         parish = self.request.query_params.get("parish")
         if parish:
             qs = qs.filter(parish__slug=parish)
