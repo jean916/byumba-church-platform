@@ -1,3 +1,7 @@
+# Render Blueprint - defines all three services needed to run this project.
+# When you connect this repo on Render and it detects this file, it offers
+# to create everything below in one step instead of configuring each
+# service by hand.
 databases:
   - name: byumba-db
     plan: free
@@ -5,33 +9,35 @@ databases:
     user: byumba
 
 services:
+  # Django backend (API)
   - type: web
     name: byumba-backend
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_admin"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_admin && python manage.py bootstrap_data"
     startCommand: "gunicorn core.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
       - key: ADMIN_USERNAME
-        sync: false
+        sync: false  # set manually in Render dashboard - your live admin username
       - key: ADMIN_PASSWORD
-        sync: false
+        sync: false  # set manually in Render dashboard - a strong password
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        sync: false
+        sync: false  # set manually: your Render backend URL + real domain once you have one
       - key: CORS_ALLOWED_ORIGINS
-        sync: false
+        sync: false  # set manually: your Render frontend URL + real domain once you have one
       - key: DATABASE_URL
         fromDatabase:
           name: byumba-db
           property: connectionString
 
+  # React frontend (static site)
   - type: web
     name: byumba-frontend
     runtime: static
@@ -40,7 +46,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        sync: false  # set manually: https://byumba-backend.onrender.com/api (your actual backend URL + /api)
     routes:
       - type: rewrite
         source: /*
