@@ -162,6 +162,25 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG
+
+# --- Email (for password reset) ---
+# Uses any standard SMTP provider - set these in .env locally or in Render's
+# environment variables in production. Free options that work well: Brevo,
+# Resend, Mailgun. Without these set, emails print to the console instead
+# of sending (useful for local testing without a real email account).
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+if EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@byumbaanglican.rw")
+
+# The frontend URL used to build password-reset links in emails.
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 CORS_ALLOWED_ORIGINS = [o for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",") if o]
 
 # --- Production-only security hardening ---

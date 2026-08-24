@@ -10,6 +10,8 @@ import Sermons from './pages/Sermons'
 import Campaigns from './pages/Campaigns'
 import Register from './pages/Register'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPasswordConfirm from './pages/ResetPasswordConfirm'
 import Profile from './pages/Profile'
 import Overview from './pages/admin/Overview'
 import AdminParishes from './pages/admin/AdminParishes'
@@ -45,6 +47,8 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:uid/:token" element={<ResetPasswordConfirm />} />
             <Route path="/account" element={<Profile />} />
             <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<Overview />} />

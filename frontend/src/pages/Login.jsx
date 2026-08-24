@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
@@ -43,6 +43,9 @@ export default function Login() {
         <input style={inputStyle} value={username} onChange={e => setUsername(e.target.value)} required />
         <label>Password</label>
         <input style={inputStyle} type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+        <p style={{ margin: '-8px 0 14px', fontSize: '0.85rem' }}>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
         {error && <p style={{ color: 'crimson' }}>{error}</p>}
         <button className="btn btn-gold" type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Log in'}
