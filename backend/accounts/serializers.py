@@ -34,3 +34,23 @@ class UserSerializer(serializers.ModelSerializer):
             "phone_number", "preferred_language", "diocese", "parish", "group",
         ]
         read_only_fields = ["role", "diocese"]
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6, min_length=6)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)

@@ -40,3 +40,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
+
+
+class PasswordResetOTP(models.Model):
+    """A one-time 6-digit code emailed to a user who forgot their password.
+    Simpler for people to type on a phone than clicking a link, and the
+    email also reminds them of their username - covers both "forgot
+    password" and "forgot username" in one flow."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reset_otps")
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    OTP_VALIDITY_MINUTES = 15
+
+    def is_valid(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        if self.used:
+            return False
+        return timezone.now() <= self.created_at + timedelta(minutes=self.OTP_VALIDITY_MINUTES)
