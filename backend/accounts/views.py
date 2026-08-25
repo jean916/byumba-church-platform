@@ -1,3 +1,4 @@
+import logging
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
@@ -12,6 +13,7 @@ from .serializers import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -74,20 +76,27 @@ class PasswordResetRequestView(APIView):
             code = f"{random.randint(0, 999999):06d}"
             PasswordResetOTP.objects.create(user=user, code=code)
 
-            send_mail(
-                subject="Your password reset code - Byumba Anglican",
-                message=(
-                    f"Hello {user.first_name or user.username},\n\n"
-                    f"Your username is: {user.username}\n\n"
-                    f"Your password reset code is: {code}\n\n"
-                    f"This code expires in {PasswordResetOTP.OTP_VALIDITY_MINUTES} minutes. "
-                    f"Enter it on the website to set a new password.\n\n"
-                    f"If you didn't request this, you can safely ignore this email."
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=True,
-            )
+            try:
+                send_mail(
+                    subject="Your password reset code - Byumba Anglican",
+                    message=(
+                        f"Hello {user.first_name or user.username},\n\n"
+                        f"Your username is: {user.username}\n\n"
+                        f"Your password reset code is: {code}\n\n"
+                        f"This code expires in {PasswordResetOTP.OTP_VALIDITY_MINUTES} minutes. "
+                        f"Enter it on the website to set a new password.\n\n"
+                        f"If you didn't request this, you can safely ignore this email."
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                # Never let email delivery problems leak to the response
+                # (would reveal whether the address is registered) - but do
+                # log the real error so it's visible in Render's Logs tab
+                # for debugging.
+                logger.error(f"Failed to send password reset email to {email}: {e}")
 
         return Response(
             {"detail": "If an account with that email exists, a reset code has been sent."},
