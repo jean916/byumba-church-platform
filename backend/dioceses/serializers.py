@@ -28,4 +28,5 @@ class DioceseSerializer(serializers.ModelSerializer):
         fields = [
             "id", "name", "slug", "bishop_name", "description", "logo", "cover_photo",
             "contact_email", "contact_phone", "parishes",
+            "intego_year", "intego_theme", "intego_verse_reference", "intego_verse_text",
         ]

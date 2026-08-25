@@ -49,6 +49,29 @@ export default function Home() {
         </div>
       </section>
 
+      {(diocese?.intego_theme || diocese?.intego_verse_text) && (
+        <section style={{ background: 'var(--color-indigo-950)', padding: '48px 24px' }}>
+          <div className="container" style={{ maxWidth: '640px', textAlign: 'center' }}>
+            <p style={{ color: 'var(--color-gold-light)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600, marginBottom: '10px' }}>
+              Intego y'Umwaka {diocese.intego_year || ''}
+            </p>
+            {diocese.intego_theme && (
+              <h2 style={{ color: 'var(--color-white)', marginBottom: '18px' }}>{diocese.intego_theme}</h2>
+            )}
+            {diocese.intego_verse_text && (
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', fontStyle: 'italic', maxWidth: '520px', margin: '0 auto' }}>
+                &ldquo;{diocese.intego_verse_text}&rdquo;
+              </p>
+            )}
+            {diocese.intego_verse_reference && (
+              <p style={{ color: 'var(--color-gold-light)', fontWeight: 600, marginTop: '10px' }}>
+                {diocese.intego_verse_reference}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       <section className="container" style={{ padding: '64px 24px' }}>
         <h2>{t('home.our_groups')}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '24px' }}>

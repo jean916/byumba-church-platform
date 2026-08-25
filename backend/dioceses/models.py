@@ -20,6 +20,18 @@ class Diocese(models.Model):
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(max_length=10, blank=True, validators=[validate_rwanda_phone])
 
+    # "Intego" - the diocese's annual theme, set fresh each year around a
+    # guiding Bible verse. Displayed prominently on the homepage.
+    intego_year = models.PositiveIntegerField(null=True, blank=True, help_text="e.g. 2026")
+    intego_theme = models.CharField(
+        max_length=300, blank=True,
+        help_text="The year's theme/motto, e.g. 'Kwizera n'Ubwiyunge' (Faith and Reconciliation)",
+    )
+    intego_verse_reference = models.CharField(
+        max_length=100, blank=True, help_text="e.g. 'Yohana 3:16' or 'John 3:16'",
+    )
+    intego_verse_text = models.TextField(blank=True, help_text="The full text of the guiding verse")
+
     def __str__(self):
         return self.name
 
