@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "cloudinary_storage",
     "django.contrib.staticfiles",
+    "cloudinary_storage",
     "cloudinary",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -151,6 +151,13 @@ else:
     }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Some third-party static files (notably a couple of icons referenced by
+# Django's own admin CSS) don't always get collected in every environment.
+# Without this, WhiteNoise's strict manifest storage fails the entire
+# collectstatic step over one missing icon reference - this makes it warn
+# instead of crash, matching WhiteNoise's own documented recommendation.
+WHITENOISE_MANIFEST_STRICT = False
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
