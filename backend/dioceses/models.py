@@ -32,6 +32,12 @@ class Diocese(models.Model):
     )
     intego_verse_text = models.TextField(blank=True, help_text="The full text of the guiding verse")
 
+    # Social media - shown as icons in the site footer. Leave blank to hide
+    # that icon; only filled-in ones are displayed.
+    facebook_url = models.URLField(blank=True)
+    instagram_url = models.URLField(blank=True)
+    tiktok_url = models.URLField(blank=True)
+
     def __str__(self):
         return self.name
 
