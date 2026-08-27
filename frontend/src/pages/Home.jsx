@@ -30,8 +30,37 @@ export default function Home() {
       }}>
         <div className="container">
           {diocese?.logo && (
-            <img src={diocese.logo} alt={`${diocese.name} logo`} style={{ height: '90px', width: '90px', objectFit: 'contain', margin: '0 auto 24px', display: 'block', borderRadius: '8px' }} />
+            <img src={diocese.logo} alt={`${diocese.name} logo`} style={{ height: '90px', width: '90px', objectFit: 'contain', margin: '0 auto 20px', display: 'block', borderRadius: '8px' }} />
           )}
+
+          {(diocese?.intego_theme || diocese?.intego_verse_text) && (
+            <div style={{
+              background: 'rgba(0,0,0,0.22)',
+              border: '1px solid rgba(230,201,107,0.35)',
+              borderRadius: '10px',
+              padding: '18px 24px',
+              maxWidth: '520px',
+              margin: '0 auto 28px',
+            }}>
+              <p style={{ color: 'var(--color-gold-light)', letterSpacing: '0.12em', textTransform: 'uppercase', fontSize: '0.72rem', fontWeight: 600, marginBottom: '8px' }}>
+                Intego y'Umwaka {diocese.intego_year || ''}
+              </p>
+              {diocese.intego_theme && (
+                <p style={{ color: 'var(--color-white)', fontWeight: 700, fontSize: '1.05rem', margin: '0 0 8px' }}>{diocese.intego_theme}</p>
+              )}
+              {diocese.intego_verse_text && (
+                <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontStyle: 'italic', margin: 0 }}>
+                  &ldquo;{diocese.intego_verse_text}&rdquo;
+                </p>
+              )}
+              {diocese.intego_verse_reference && (
+                <p style={{ color: 'var(--color-gold-light)', fontWeight: 600, fontSize: '0.85rem', marginTop: '6px', marginBottom: 0 }}>
+                  {diocese.intego_verse_reference}
+                </p>
+              )}
+            </div>
+          )}
+
           <p style={{ color: 'var(--color-gold-light)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600, marginBottom: '16px' }}>
             Byumba &middot; Rwanda
           </p>
@@ -48,29 +77,6 @@ export default function Home() {
           <ArchDivider color="rgba(255,255,255,0.35)" />
         </div>
       </section>
-
-      {(diocese?.intego_theme || diocese?.intego_verse_text) && (
-        <section style={{ background: 'var(--color-indigo-950)', padding: '48px 24px' }}>
-          <div className="container" style={{ maxWidth: '640px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--color-gold-light)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600, marginBottom: '10px' }}>
-              Intego y'Umwaka {diocese.intego_year || ''}
-            </p>
-            {diocese.intego_theme && (
-              <h2 style={{ color: 'var(--color-white)', marginBottom: '18px' }}>{diocese.intego_theme}</h2>
-            )}
-            {diocese.intego_verse_text && (
-              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', fontStyle: 'italic', maxWidth: '520px', margin: '0 auto' }}>
-                &ldquo;{diocese.intego_verse_text}&rdquo;
-              </p>
-            )}
-            {diocese.intego_verse_reference && (
-              <p style={{ color: 'var(--color-gold-light)', fontWeight: 600, marginTop: '10px' }}>
-                {diocese.intego_verse_reference}
-              </p>
-            )}
-          </div>
-        </section>
-      )}
 
       <section className="container" style={{ padding: '64px 24px' }}>
         <h2>{t('home.our_groups')}</h2>
