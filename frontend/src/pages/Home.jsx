@@ -29,10 +29,6 @@ export default function Home() {
         textAlign: 'center',
       }}>
         <div className="container">
-          {diocese?.logo && (
-            <img src={diocese.logo} alt={`${diocese.name} logo`} style={{ height: '90px', width: '90px', objectFit: 'contain', margin: '0 auto 20px', display: 'block', borderRadius: '8px' }} />
-          )}
-
           {(diocese?.intego_theme || diocese?.intego_verse_text) && (
             <div style={{
               background: 'rgba(0,0,0,0.22)',
