@@ -3,6 +3,12 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import client from '../api/client'
 
+// The six standard group types every parish is expected to have (or be
+// working toward) - shown in this fixed order regardless of which ones
+// actually exist yet, so it's clear at a glance what's set up and what
+// isn't for a given parish.
+const GROUP_TYPE_ORDER = ['MOTHERS_UNION', 'FATHERS_UNION', 'YOUTH_UNION', 'CHOIR', 'CHILDREN', 'GFS']
+
 export default function ParishDetail() {
   const { slug } = useParams()
   const { t, i18n } = useTranslation()
@@ -92,19 +98,39 @@ export default function ParishDetail() {
           </>
         )}
 
-        {groups.length > 0 && (
-          <>
-            <h2>Groups &amp; Choirs</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '32px' }}>
-              {groups.map(g => (
-                <div key={g.id} className="card">
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{g.name}</h3>
-                  <p style={{ margin: 0, fontSize: '0.85rem' }}>{t(`groups.${g.group_type}`, g.group_type)}</p>
-                  {g.leader_name && <p style={{ margin: 0, fontSize: '0.85rem' }}>{g.group_type === 'CHOIR' ? 'President' : 'Leader'}: {g.leader_name}</p>}
-                </div>
-              ))}
-            </div>
-          </>
+        <h2>Groups &amp; Choirs</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '32px' }}>
+          {GROUP_TYPE_ORDER.map(type => {
+            const match = groups.find(g => g.group_type === type)
+            return (
+              <div key={type} className="card" style={{ opacity: match ? 1 : 0.5 }}>
+                <h3 style={{ margin: 0, fontSize: '1rem' }}>{t(`groups.${type}`, type)}</h3>
+                {match ? (
+                  <>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{match.name}</p>
+                    {match.leader_name && (
+                      <p style={{ margin: 0, fontSize: '0.85rem' }}>
+                        {type === 'CHOIR' ? 'President' : 'Leader'}: {match.leader_name}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>Not yet set up at this parish</p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {groups.filter(g => g.group_type === 'OTHER' || !GROUP_TYPE_ORDER.includes(g.group_type)).length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '32px' }}>
+            {groups.filter(g => g.group_type === 'OTHER' || !GROUP_TYPE_ORDER.includes(g.group_type)).map(g => (
+              <div key={g.id} className="card">
+                <h3 style={{ margin: 0, fontSize: '1rem' }}>{g.name}</h3>
+                {g.leader_name && <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>Leader: {g.leader_name}</p>}
+              </div>
+            ))}
+          </div>
         )}
 
         {events.length > 0 && (
