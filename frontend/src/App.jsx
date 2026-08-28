@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Parishes from './pages/Parishes'
+import ParishDetail from './pages/ParishDetail'
 import Groups from './pages/Groups'
 import Announcements from './pages/Announcements'
 import Events from './pages/Events'
@@ -38,6 +39,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/parishes" element={<Parishes />} />
+            <Route path="/parishes/:slug" element={<ParishDetail />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/events" element={<Events />} />
