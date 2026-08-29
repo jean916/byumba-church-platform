@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import client from '../api/client'
+import { useAuth } from '../context/AuthContext'
+import GiveForm from '../components/GiveForm'
 
 // The six standard group types every parish is expected to have (or be
 // working toward) - shown in this fixed order regardless of which ones
@@ -12,13 +14,17 @@ const GROUP_TYPE_ORDER = ['MOTHERS_UNION', 'FATHERS_UNION', 'YOUTH_UNION', 'CHOI
 export default function ParishDetail() {
   const { slug } = useParams()
   const { t, i18n } = useTranslation()
+  const { user } = useAuth()
   const [parish, setParish] = useState(null)
   const [groups, setGroups] = useState([])
   const [announcements, setAnnouncements] = useState([])
   const [events, setEvents] = useState([])
   const [sermons, setSermons] = useState([])
   const [clergy, setClergy] = useState([])
+  const [campaigns, setCampaigns] = useState([])
   const [notFound, setNotFound] = useState(false)
+
+  const loadCampaigns = () => client.get(`/offerings/campaigns/?parish=${slug}&active=true`).then(res => setCampaigns(res.data)).catch(() => {})
 
   useEffect(() => {
     setParish(null)
@@ -36,6 +42,7 @@ export default function ParishDetail() {
       client.get(`/content/announcements/?parish=${slug}`).then(res => setAnnouncements(res.data)).catch(() => {})
       client.get(`/content/events/?parish=${slug}`).then(res => setEvents(res.data)).catch(() => {})
       client.get(`/content/sermons/?parish=${slug}`).then(res => setSermons(res.data)).catch(() => {})
+      loadCampaigns()
       // Clergy aren't filterable by parish on the backend yet, only by
       // diocese - so fetch the (small) diocese-wide list and filter here.
       // Hardcoded to "byumba" since this is currently a single-diocese
@@ -157,6 +164,41 @@ export default function ParishDetail() {
                   <p style={{ margin: 0, fontSize: '0.9rem' }}>{i18n.language === 'rw' && a.body_rw ? a.body_rw : a.body_en}</p>
                 </div>
               ))}
+            </div>
+          </>
+        )}
+
+        {campaigns.length > 0 && (
+          <>
+            <h2>Give to This Parish</h2>
+            <div style={{ display: 'grid', gap: '16px', marginBottom: '32px' }}>
+              {campaigns.map(c => {
+                const pct = Math.min(100, Math.round((c.raised_amount_rwf / c.target_amount_rwf) * 100))
+                return (
+                  <div key={c.id} className="card">
+                    <h3 style={{ marginTop: 0 }}>{c.title}</h3>
+                    {c.description && <p style={{ fontSize: '0.9rem' }}>{c.description}</p>}
+                    <p style={{ fontWeight: 600, margin: '4px 0', fontSize: '0.9rem' }}>
+                      {Number(c.raised_amount_rwf).toLocaleString()} / {Number(c.target_amount_rwf).toLocaleString()} RWF ({pct}%)
+                    </p>
+                    <div style={{ background: 'var(--color-parchment)', borderRadius: '6px', height: '12px', overflow: 'hidden', marginBottom: '12px' }}>
+                      <div style={{ background: 'var(--color-gold)', height: '100%', width: `${pct}%` }} />
+                    </div>
+                    <div style={{ fontSize: '0.85rem', marginBottom: '8px' }}>
+                      {c.momo_code && <p style={{ margin: 0 }}><strong>MTN MoMo:</strong> {c.momo_code}</p>}
+                      {c.airtel_code && <p style={{ margin: 0 }}><strong>Airtel Money:</strong> {c.airtel_code}</p>}
+                      {c.bank_details && <p style={{ margin: 0 }}><strong>Bank:</strong> {c.bank_details}</p>}
+                    </div>
+                    {user ? (
+                      <GiveForm campaign={c} onDone={loadCampaigns} />
+                    ) : (
+                      <p style={{ fontSize: '0.85rem' }}>
+                        <Link to="/login">Log in</Link> or <Link to="/register">register</Link> to confirm your contribution.
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         )}
