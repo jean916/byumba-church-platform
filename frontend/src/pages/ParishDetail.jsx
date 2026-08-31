@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import GiveForm from '../components/GiveForm'
+import ArchDivider from '../components/ArchDivider'
 
 // The six standard group types every parish is expected to have (or be
 // working toward) - shown in this fixed order regardless of which ones
@@ -69,18 +70,35 @@ export default function ParishDetail() {
 
   return (
     <div>
-      {parish.photo && (
-        <div style={{ width: '100%', height: '280px', overflow: 'hidden' }}>
-          <img src={parish.photo} alt={parish.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <section style={{
+        background: parish.photo
+          ? `linear-gradient(160deg, rgba(19,27,51,0.88) 0%, rgba(27,42,74,0.85) 55%, rgba(47,82,51,0.8) 140%), url(${parish.photo}) center/cover no-repeat`
+          : `linear-gradient(160deg, var(--color-indigo-950) 0%, var(--color-indigo-900) 55%, var(--color-hill-green) 140%)`,
+        color: 'var(--color-white)',
+        padding: '72px 24px 56px',
+        textAlign: 'center',
+      }}>
+        <div className="container">
+          <p style={{ margin: '0 0 12px' }}>
+            <Link to="/parishes" style={{ color: 'rgba(255,255,255,0.85)' }}>&larr; {t('nav.parishes')}</Link>
+          </p>
+          {parish.archdeaconry && (
+            <p style={{ color: 'var(--color-gold-light)', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 600, marginBottom: '16px' }}>
+              {parish.archdeaconry}
+            </p>
+          )}
+          <h1 style={{ color: 'var(--color-white)' }}>{parish.name}</h1>
+          {parish.location && (
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.1rem', maxWidth: '520px', margin: '0 auto' }}>
+              {parish.location}
+            </p>
+          )}
         </div>
-      )}
+      </section>
+      <ArchDivider color="var(--color-gold)" />
 
       <div className="container" style={{ padding: '40px 24px', maxWidth: '760px' }}>
-        <p style={{ marginBottom: '4px' }}><Link to="/parishes">&larr; {t('nav.parishes')}</Link></p>
-        <h1 style={{ marginBottom: '4px' }}>{parish.name}</h1>
-        {parish.archdeaconry && <p style={{ margin: 0, fontWeight: 600 }}>{parish.archdeaconry}</p>}
-
-        <div className="card" style={{ marginTop: '20px', marginBottom: '32px' }}>
+        <div className="card" style={{ marginTop: '0', marginBottom: '32px' }}>
           {parish.location && <p style={{ margin: '0 0 6px' }}><strong>Location:</strong> {parish.location}</p>}
           {parish.parish_pastor && <p style={{ margin: '0 0 6px' }}><strong>Pastor:</strong> {parish.parish_pastor}</p>}
           {parish.service_times && <p style={{ margin: '0 0 6px' }}><strong>Service times:</strong> {parish.service_times}</p>}
