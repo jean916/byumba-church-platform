@@ -38,6 +38,13 @@ class User(AbstractUser):
     date_baptized = models.DateField(null=True, blank=True)
     date_confirmed = models.DateField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        # `manage.py createsuperuser` leaves role at its MEMBER default, which
+        # would lock that account out of the API/admin dashboard.
+        if self.is_superuser and self.role == self.Role.MEMBER:
+            self.role = self.Role.SUPER_ADMIN
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
 

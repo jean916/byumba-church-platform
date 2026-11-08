@@ -176,6 +176,9 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "20/minute",
         "user": "1000/day",
+        # Password-reset request + code check: a 6-digit code must not be
+        # guessable by hammering the endpoint.
+        "password_reset": "10/hour",
     },
 }
 

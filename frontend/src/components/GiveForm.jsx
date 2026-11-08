@@ -8,13 +8,16 @@ export default function GiveForm({ campaign, onDone }) {
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('MTN_MOMO')
   const [status, setStatus] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const submit = async e => {
     e.preventDefault()
     setStatus('saving')
+    setErrorMsg('')
     try {
+      // Parish and giver are worked out by the server from the campaign and
+      // the logged-in account, so they are not sent from here.
       await client.post('/offerings/', {
-        parish: campaign.parish || null,
         campaign: campaign.id,
         amount_rwf: amount,
         purpose: 'OTHER',
@@ -24,12 +27,15 @@ export default function GiveForm({ campaign, onDone }) {
       setStatus('done')
       setAmount('')
       onDone()
-    } catch {
+    } catch (err) {
+      const d = err?.response?.data
+      const first = d && (d.detail || Object.values(d)[0])
+      setErrorMsg(Array.isArray(first) ? first[0] : (typeof first === 'string' ? first : ''))
       setStatus('error')
     }
   }
 
-  if (status === 'done') return <p style={{ color: 'var(--color-hill-green)', fontWeight: 600 }}>Thank you! Your contribution has been recorded.</p>
+  if (status === 'done') return <p style={{ color: 'var(--color-hill-green)', fontWeight: 600 }}>Thank you! Your gift has been recorded and will be added to the total once the parish confirms it.</p>
 
   return (
     <form onSubmit={submit} style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -47,7 +53,7 @@ export default function GiveForm({ campaign, onDone }) {
       <button className="btn btn-gold" type="submit" disabled={status === 'saving'} style={{ padding: '8px 16px' }}>
         I've given — confirm
       </button>
-      {status === 'error' && <p style={{ color: 'crimson', width: '100%' }}>Something went wrong — please try again.</p>}
+      {status === 'error' && <p style={{ color: 'crimson', width: '100%' }}>{errorMsg || 'Something went wrong — please try again.'}</p>}
     </form>
   )
 }

@@ -21,6 +21,10 @@ class Offering(models.Model):
         BANK_TRANSFER = "BANK_TRANSFER", "Bank transfer"
         CASH = "CASH", "Cash"
 
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending confirmation"
+        CONFIRMED = "CONFIRMED", "Confirmed"
+
     parish = models.ForeignKey("dioceses.Parish", on_delete=models.CASCADE, related_name="offerings")
     campaign = models.ForeignKey(
         "Campaign", on_delete=models.SET_NULL, null=True, blank=True, related_name="offerings",
@@ -39,6 +43,17 @@ class Offering(models.Model):
     )
     date_given = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Gifts a member reports themselves start PENDING and only count toward
+    # totals / campaign progress once a parish or diocese admin confirms them
+    # against the real MoMo/bank/cash record. Gifts logged by an admin are
+    # confirmed straight away.
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="offerings_confirmed",
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-date_given"]
@@ -80,4 +95,8 @@ class Campaign(models.Model):
 
     @property
     def raised_amount_rwf(self):
-        return self.offerings.aggregate(total=models.Sum("amount_rwf"))["total"] or 0
+        # Only confirmed gifts count - self-reported ones wait for an admin.
+        return (
+            self.offerings.filter(status=Offering.Status.CONFIRMED)
+            .aggregate(total=models.Sum("amount_rwf"))["total"] or 0
+        )

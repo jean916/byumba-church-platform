@@ -2,6 +2,20 @@ import { useEffect, useState } from 'react'
 import client from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 
+// Turn the server's reply into a readable message instead of hiding it.
+function explain(err) {
+  if (!err.response) return 'Cannot reach the server. Is the backend running?'
+  const { status, data } = err.response
+  if (status === 401) return 'Your login has expired. Log out, log in again, then retry.'
+  if (status === 403) return (data && data.detail) || 'You are not allowed to do this.'
+  if (data && typeof data === 'object') {
+    return Object.entries(data)
+      .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(' ') : v}`)
+      .join(' | ')
+  }
+  return `Server error (${status}).`
+}
+
 const emptyForm = {
   parish: '', title: '', description: '', target_amount_rwf: '',
   start_date: new Date().toISOString().slice(0, 10), end_date: '',
@@ -14,6 +28,7 @@ export default function AdminCampaigns() {
   const [parishes, setParishes] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [status, setStatus] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
 
   const canManage = user?.role === 'SUPER_ADMIN' || user?.role === 'DIOCESE_ADMIN' || user?.role === 'PARISH_ADMIN'
 
@@ -28,6 +43,7 @@ export default function AdminCampaigns() {
   const handleSubmit = async e => {
     e.preventDefault()
     setStatus('saving')
+    setErrorMsg('')
     try {
       const dioceseId = user?.diocese || parishes[0]?.diocese
       await client.post('/offerings/campaigns/', {
@@ -36,7 +52,8 @@ export default function AdminCampaigns() {
       setForm(emptyForm)
       setStatus('done')
       load()
-    } catch {
+    } catch (err) {
+      setErrorMsg(explain(err))
       setStatus('error')
     }
   }
@@ -102,7 +119,7 @@ export default function AdminCampaigns() {
             <label>Bank details</label>
             <input style={inputStyle} name="bank_details" value={form.bank_details} onChange={handleChange} placeholder="e.g. Bank of Kigali, Acct 000-123456" />
             <button className="btn btn-gold" type="submit" disabled={status === 'saving'}>Create campaign</button>
-            {status === 'error' && <p style={{ color: 'crimson' }}>Something went wrong — check the fields and try again.</p>}
+            {status === 'error' && <p style={{ color: 'crimson' }}>{errorMsg || 'Something went wrong — check the fields and try again.'}</p>}
           </form>
         </>
       )}

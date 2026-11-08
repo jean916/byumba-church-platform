@@ -34,6 +34,22 @@ services:
         sync: false  # set manually: your Render backend URL + real domain once you have one
       - key: CORS_ALLOWED_ORIGINS
         sync: false  # set manually: your Render frontend URL + real domain once you have one
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false  # set manually: https:// versions of your backend + real domain (needed for the Django admin login)
+      - key: FRONTEND_URL
+        sync: false  # set manually: your frontend URL, e.g. https://byumbaanglican.rw
+      # Email - without these, password-reset codes are only printed to the log
+      # and members cannot recover their accounts. Brevo/Resend/Mailgun all work.
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false  # e.g. no-reply@byumbaanglican.rw (must be allowed by your email provider)
       - key: DATABASE_URL
         fromDatabase:
           name: byumba-db

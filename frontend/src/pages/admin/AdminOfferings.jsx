@@ -24,6 +24,12 @@ export default function AdminOfferings() {
     })
   }, [])
 
+  const confirmGift = async id => {
+    await client.post(`/offerings/${id}/confirm/`)
+    load()
+  }
+  const pendingCount = records.filter(r => r.status === 'PENDING').length
+
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async e => {
@@ -47,6 +53,12 @@ export default function AdminOfferings() {
       <h1>Offerings</h1>
       <p>Log a contribution someone already paid via Mobile Money, bank transfer, or cash — this keeps a record for reconciliation and reporting. It does not charge anyone automatically.</p>
 
+      {pendingCount > 0 && (
+        <p style={{ background: 'var(--color-gold-light)', color: 'var(--color-indigo-950)', padding: '10px 14px', borderRadius: '6px', fontWeight: 600 }}>
+          {pendingCount} gift{pendingCount > 1 ? 's' : ''} reported by members waiting for your confirmation. Check each against the MoMo/bank/cash record, then press Confirm. Unconfirmed gifts are not counted in any total.
+        </p>
+      )}
+
       <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden', marginBottom: '32px' }}>
         <thead>
           <tr style={{ background: 'var(--color-indigo-900)', color: 'white', textAlign: 'left' }}>
@@ -55,6 +67,7 @@ export default function AdminOfferings() {
             <th style={{ padding: '10px 14px' }}>Amount (RWF)</th>
             <th style={{ padding: '10px 14px' }}>Purpose</th>
             <th style={{ padding: '10px 14px' }}>Method</th>
+            <th style={{ padding: '10px 14px' }}>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -67,10 +80,15 @@ export default function AdminOfferings() {
                 <td style={{ padding: '10px 14px' }}>{Number(r.amount_rwf).toLocaleString()}</td>
                 <td style={{ padding: '10px 14px' }}>{r.purpose}</td>
                 <td style={{ padding: '10px 14px' }}>{r.method}</td>
+                <td style={{ padding: '10px 14px' }}>
+                  {r.status === 'PENDING'
+                    ? <button className="btn btn-gold" style={{ padding: '4px 12px' }} onClick={() => confirmGift(r.id)}>Confirm</button>
+                    : 'Confirmed'}
+                </td>
               </tr>
             )
           })}
-          {records.length === 0 && <tr><td colSpan={5} style={{ padding: '10px 14px' }}>No records yet.</td></tr>}
+          {records.length === 0 && <tr><td colSpan={6} style={{ padding: '10px 14px' }}>No records yet.</td></tr>}
         </tbody>
       </table>
 

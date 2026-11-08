@@ -1,8 +1,10 @@
 import logging
+import secrets
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework import generics, permissions, status
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -64,6 +66,8 @@ class PasswordResetRequestView(APIView):
     registered protects members' privacy."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
@@ -72,8 +76,7 @@ class PasswordResetRequestView(APIView):
 
         user = User.objects.filter(email__iexact=email).first()
         if user:
-            import random
-            code = f"{random.randint(0, 999999):06d}"
+            code = f"{secrets.randbelow(1_000_000):06d}"
             PasswordResetOTP.objects.create(user=user, code=code)
 
             try:
@@ -109,6 +112,8 @@ class PasswordResetVerifyView(APIView):
     if the code is valid, unused, and not expired."""
 
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetVerifySerializer(data=request.data)

@@ -18,7 +18,7 @@ export default function Profile() {
   // Admins/leaders have their own richer dashboard - send them there instead.
   if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin" replace />
 
-  const total = offerings.reduce((sum, o) => sum + Number(o.amount_rwf), 0)
+  const total = offerings.filter(o => o.status === 'CONFIRMED').reduce((sum, o) => sum + Number(o.amount_rwf), 0)
 
   return (
     <div className="container" style={{ padding: '56px 24px', maxWidth: '640px' }}>
@@ -40,7 +40,7 @@ export default function Profile() {
         {offerings.length === 0 && <p>No contributions logged yet.</p>}
         {offerings.map(o => (
           <div key={o.id} className="card" style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>{o.date_given} — {o.purpose}</span>
+            <span>{o.date_given} — {o.purpose}{o.status === 'PENDING' ? ' (awaiting confirmation)' : ''}</span>
             <strong>{Number(o.amount_rwf).toLocaleString()} RWF</strong>
           </div>
         ))}
