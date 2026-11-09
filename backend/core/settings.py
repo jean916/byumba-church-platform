@@ -190,12 +190,23 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 # --- Email (for password reset) ---
-# Uses any standard SMTP provider - set these in .env locally or in Render's
-# environment variables in production. Free options that work well: Brevo,
-# Resend, Mailgun. Without these set, emails print to the console instead
-# of sending (useful for local testing without a real email account).
+# Picks the first option that is configured:
+#   1. BREVO_API_KEY / RESEND_API_KEY -> sends over HTTPS through the
+#      provider's web API (django-anymail). Use this on Render's free plan,
+#      which blocks the SMTP ports (25/465/587) for outbound traffic.
+#   2. EMAIL_HOST -> classic SMTP (works locally and on paid Render plans).
+#   3. nothing set -> emails print to the console (local testing).
+# DEFAULT_FROM_EMAIL must be an address the provider has verified.
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-if EMAIL_HOST:
+if BREVO_API_KEY:
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+    ANYMAIL = {"BREVO_API_KEY": BREVO_API_KEY}
+elif RESEND_API_KEY:
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+    ANYMAIL = {"RESEND_API_KEY": RESEND_API_KEY}
+elif EMAIL_HOST:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
@@ -203,7 +214,8 @@ if EMAIL_HOST:
     EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@byumbaanglican.rw")
+# `or` (not a get-default) so an env var that exists but is empty still falls back.
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "no-reply@byumbaanglican.rw"
 
 # The frontend URL used to build password-reset links in emails.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
