@@ -75,7 +75,7 @@ export default function AdminCampaigns() {
           const pct = Math.min(100, Math.round((c.raised_amount_rwf / c.target_amount_rwf) * 100))
           return (
             <div key={c.id} className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
                 <h3 style={{ margin: 0 }}>{c.title} {!c.is_active && <span style={{ fontSize: '0.8rem', color: 'var(--color-ink-soft)' }}>(closed)</span>}</h3>
                 {canManage && (
                   <button onClick={() => toggleActive(c)} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '4px 12px', fontSize: '0.8rem' }}>

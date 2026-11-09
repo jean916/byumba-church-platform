@@ -73,7 +73,7 @@ function GroupManagePanel({ group, onClose, onChanged }) {
 
   return (
     <div style={{ background: 'var(--color-parchment)', borderRadius: '10px', padding: '20px', marginTop: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
         <h3 style={{ margin: 0 }}>Managing: {group.name}</h3>
         <button onClick={onClose} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px' }}>Close</button>
       </div>
@@ -104,7 +104,7 @@ function GroupManagePanel({ group, onClose, onChanged }) {
           </li>
         ))}
       </ul>
-      <form onSubmit={addSong} style={{ display: 'flex', gap: '4px' }}>
+      <form onSubmit={addSong} style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
         <input style={inputStyle} placeholder="Song title" value={songTitle} onChange={e => setSongTitle(e.target.value)} />
         <button className="btn btn-gold" style={{ padding: '6px 14px' }} disabled={busy}>Add song</button>
       </form>
@@ -232,7 +232,7 @@ export default function AdminGroups() {
                 <input style={inputStyle} name="leader_contact" value={editForm.leader_contact} onChange={handleEditChange} />
                 <label>Replace cover photo (optional)</label>
                 <input style={inputStyle} type="file" accept="image/*" onChange={e => setEditPhotoFile(e.target.files[0])} />
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button className="btn btn-gold" type="submit" disabled={editStatus === 'saving'} style={{ padding: '6px 14px', fontSize: '0.85rem' }}>Save</button>
                   <button type="button" onClick={cancelEdit} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>Cancel</button>
                 </div>
@@ -251,7 +251,7 @@ export default function AdminGroups() {
                     {g.members_list?.length || 0} members · {g.songs?.length || 0} songs · {g.photos?.length || 0} photos
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
                   <button onClick={() => setManagingId(managingId === g.id ? null : g.id)} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>
                     {managingId === g.id ? 'Hide details' : 'Manage'}
                   </button>

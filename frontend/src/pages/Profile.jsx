@@ -39,7 +39,7 @@ export default function Profile() {
       <div style={{ display: 'grid', gap: '10px' }}>
         {offerings.length === 0 && <p>No contributions logged yet.</p>}
         {offerings.map(o => (
-          <div key={o.id} className="card" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div key={o.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
             <span>{o.date_given} — {o.purpose}{o.status === 'PENDING' ? ' (awaiting confirmation)' : ''}</span>
             <strong>{Number(o.amount_rwf).toLocaleString()} RWF</strong>
           </div>

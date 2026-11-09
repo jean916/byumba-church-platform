@@ -59,7 +59,7 @@ export default function AdminOfferings() {
         </p>
       )}
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden', marginBottom: '32px' }}>
+      <div className="table-scroll"><table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden', marginBottom: '32px' }}>
         <thead>
           <tr style={{ background: 'var(--color-indigo-900)', color: 'white', textAlign: 'left' }}>
             <th style={{ padding: '10px 14px' }}>Date</th>
@@ -90,7 +90,7 @@ export default function AdminOfferings() {
           })}
           {records.length === 0 && <tr><td colSpan={6} style={{ padding: '10px 14px' }}>No records yet.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
 
       <h2>Log a contribution</h2>
       <form onSubmit={handleSubmit} style={{ maxWidth: '420px' }}>

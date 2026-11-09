@@ -32,7 +32,7 @@ export default function Overview() {
             <p style={{ margin: 0, fontSize: '0.85rem' }}>Grand total (RWF)</p>
             <h2 style={{ margin: 0 }}>{Number(totals.grand_total_rwf).toLocaleString()}</h2>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden' }}>
+          <div className="table-scroll"><table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--color-surface)', borderRadius: '10px', overflow: 'hidden' }}>
             <thead>
               <tr style={{ background: 'var(--color-indigo-900)', color: 'white', textAlign: 'left' }}>
                 <th style={{ padding: '10px 14px' }}>Purpose</th>
@@ -47,7 +47,7 @@ export default function Overview() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
           <p style={{ fontSize: '0.85rem', marginTop: '12px' }}>Note: this shows totals only — individual member giving records are not listed here, in line with the privacy approach in the requirements document.</p>
         </>
       )}

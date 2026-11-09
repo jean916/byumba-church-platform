@@ -15,11 +15,11 @@ export default function DashboardLayout() {
   })
 
   return (
-    <div style={{ display: 'flex', minHeight: '70vh' }}>
-      <aside style={{ width: '220px', background: 'var(--color-parchment)', padding: '24px 16px', flexShrink: 0 }}>
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-ink-soft)', marginBottom: '4px' }}>Logged in as</p>
-        <p style={{ fontWeight: 700, marginBottom: '20px' }}>{user?.first_name || user?.username} <br /><span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{user?.role}</span></p>
-        <nav>
+    <div className="dash">
+      <aside className="dash-aside">
+        <p className="dash-who" style={{ fontSize: '0.8rem', color: 'var(--color-ink-soft)', marginBottom: '4px' }}>Logged in as</p>
+        <p className="dash-who" style={{ fontWeight: 700, marginBottom: '20px' }}>{user?.first_name || user?.username} <br /><span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{user?.role}</span></p>
+        <nav className="dash-nav">
           <NavLink to="/admin" end style={linkStyle}>Overview</NavLink>
           <NavLink to="/admin/parishes" style={linkStyle}>Parishes</NavLink>
           <NavLink to="/admin/groups" style={linkStyle}>Groups</NavLink>
@@ -30,11 +30,11 @@ export default function DashboardLayout() {
           <NavLink to="/admin/offerings" style={linkStyle}>Offerings</NavLink>
           <NavLink to="/admin/campaigns" style={linkStyle}>Campaigns</NavLink>
         </nav>
-        <button onClick={logout} className="btn btn-outline" style={{ marginTop: '24px', color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', width: '100%' }}>
+        <button onClick={logout} className="btn btn-outline dash-logout" style={{ marginTop: '24px', color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', width: '100%' }}>
           Log out
         </button>
       </aside>
-      <div style={{ flex: 1, padding: '32px' }}>
+      <div className="dash-main">
         <Outlet />
       </div>
     </div>

@@ -19,7 +19,7 @@ export default function Sermons() {
             <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{s.date_preached}{s.preacher_name && ` — ${s.preacher_name}`}</p>
             {s.scripture_reference && <p style={{ margin: '4px 0 0', fontSize: '0.9rem', fontStyle: 'italic' }}>{s.scripture_reference}</p>}
             {s.summary && <p style={{ margin: '8px 0 0' }}>{s.summary}</p>}
-            <div style={{ display: 'flex', gap: '16px', marginTop: '10px' }}>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '10px', flexWrap: 'wrap' }}>
               {s.video_url && <a href={s.video_url} target="_blank" rel="noreferrer">🎬 Watch</a>}
               {s.audio_url && <a href={s.audio_url} target="_blank" rel="noreferrer">🎧 Listen</a>}
             </div>

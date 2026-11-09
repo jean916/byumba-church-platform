@@ -53,7 +53,7 @@ export default function Footer() {
           Anglican Diocese of Byumba &middot; Rwanda
         </p>
         {hasSocial && (
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {diocese.facebook_url && (
               <a href={diocese.facebook_url} target="_blank" rel="noreferrer" aria-label="Facebook" style={iconLinkStyle}>
                 <FacebookIcon />

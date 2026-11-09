@@ -46,7 +46,7 @@ export default function AdminSermons() {
       <h1>Sermons</h1>
       <div style={{ display: 'grid', gap: '12px', marginBottom: '32px' }}>
         {sermons.map(s => (
-          <div key={s.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div key={s.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ margin: 0 }}>{s.title}</h3>
               <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{s.date_preached} {s.preacher_name && `— ${s.preacher_name}`}</p>

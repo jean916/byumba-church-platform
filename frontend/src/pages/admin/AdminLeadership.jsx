@@ -93,7 +93,7 @@ export default function AdminLeadership() {
       <h1>Leadership</h1>
 
       <h2>Bishop, Archdeacons &amp; Pastors</h2>
-      <table style={tableStyle}>
+      <div className="table-scroll"><table style={tableStyle}>
         <thead>
           <tr style={headRowStyle}>
             <th style={thStyle}>Name</th>
@@ -123,7 +123,7 @@ export default function AdminLeadership() {
           })}
           {sortedClergy.length === 0 && <tr><td colSpan={5} style={tdStyle}>No clergy added yet.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
 
       {canAdd && (
         <>
@@ -148,7 +148,7 @@ export default function AdminLeadership() {
             <input style={inputStyle} name="contact_email" value={form.contact_email} onChange={handleChange} />
             <label>Notes</label>
             <input style={inputStyle} name="notes" value={form.notes} onChange={handleChange} />
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button className="btn btn-gold" type="submit" disabled={status === 'saving'}>{editingId ? 'Save changes' : 'Add to directory'}</button>
               {editingId && <button type="button" onClick={cancelEdit} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)' }}>Cancel</button>}
             </div>
@@ -158,7 +158,7 @@ export default function AdminLeadership() {
       )}
 
       <h2>Archdeaconries</h2>
-      <table style={tableStyle}>
+      <div className="table-scroll"><table style={tableStyle}>
         <thead>
           <tr style={headRowStyle}>
             <th style={thStyle}>Archdeaconry</th>
@@ -176,10 +176,10 @@ export default function AdminLeadership() {
           ))}
           {Object.keys(archdeaconries).length === 0 && <tr><td colSpan={3} style={tdStyle}>No archdeaconry info yet — add it on each parish's record.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
 
       <h2>Group Leaders</h2>
-      <table style={tableStyle}>
+      <div className="table-scroll"><table style={tableStyle}>
         <thead>
           <tr style={headRowStyle}>
             <th style={thStyle}>Name</th>
@@ -197,7 +197,7 @@ export default function AdminLeadership() {
           ))}
           {groupLeaders.length === 0 && <tr><td colSpan={3} style={tdStyle}>No group leaders recorded yet.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
     </div>
   )
 }

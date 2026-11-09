@@ -53,7 +53,7 @@ export default function AdminAnnouncements() {
       <h1>Announcements</h1>
       <div style={{ display: 'grid', gap: '12px', marginBottom: '32px' }}>
         {items.map(a => (
-          <div key={a.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div key={a.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ margin: 0 }}>{a.title_en} {a.is_pinned && '📌'}</h3>
               <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{a.body_en}</p>

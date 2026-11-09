@@ -50,7 +50,7 @@ export default function AdminEvents() {
       <h1>Events</h1>
       <div style={{ display: 'grid', gap: '12px', marginBottom: '32px' }}>
         {events.map(e => (
-          <div key={e.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div key={e.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ margin: 0 }}>{e.title_en}</h3>
               <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{new Date(e.start_time).toLocaleString()} {e.location && `— ${e.location}`}</p>

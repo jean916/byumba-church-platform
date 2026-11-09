@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +10,7 @@ export default function Navbar() {
   const { user, isAdmin } = useAuth()
   const diocese = useDiocese()
   const { theme, toggleTheme } = useTheme()
+  const [open, setOpen] = useState(false)
 
   const switchLang = (lang) => {
     i18n.changeLanguage(lang)
@@ -23,7 +25,7 @@ export default function Navbar() {
 
   return (
     <header style={{ background: 'var(--color-indigo-900)' }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px' }}>
+      <div className="container site-header-inner">
         <Link to="/" style={{ color: 'var(--color-white)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
           {diocese?.logo && (
             <img src={diocese.logo} alt={`${diocese.name} logo`} style={{ height: '40px', width: '40px', objectFit: 'contain', borderRadius: '4px' }} />
@@ -32,7 +34,16 @@ export default function Navbar() {
             Byumba Anglican
           </span>
         </Link>
-        <nav style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
+        <button
+          className="nav-toggle"
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+          aria-controls="site-nav"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+        >
+          {open ? '✕' : '☰'}
+        </button>
+        <nav id="site-nav" className={`site-nav${open ? ' open' : ''}`} onClick={() => setOpen(false)}>
           <NavLink to="/" style={linkStyle}>{t('nav.home')}</NavLink>
           <NavLink to="/parishes" style={linkStyle}>{t('nav.parishes')}</NavLink>
           <NavLink to="/groups" style={linkStyle}>{t('nav.groups')}</NavLink>
@@ -52,7 +63,8 @@ export default function Navbar() {
               {t('nav.register')}
             </NavLink>
           )}
-          <div style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
+          <div className="nav-tools">
+          <div style={{ display: 'flex', gap: '6px' }}>
             <button onClick={() => switchLang('rw')} aria-label="Kinyarwanda" style={{ background: 'none', border: 'none', color: 'var(--color-white)', opacity: i18n.language === 'rw' ? 1 : 0.5, fontWeight: 700 }}>RW</button>
             <button onClick={() => switchLang('en')} aria-label="English" style={{ background: 'none', border: 'none', color: 'var(--color-white)', opacity: i18n.language === 'en' ? 1 : 0.5, fontWeight: 700 }}>EN</button>
           </div>
@@ -64,6 +76,7 @@ export default function Navbar() {
           >
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
+          </div>
         </nav>
       </div>
     </header>
