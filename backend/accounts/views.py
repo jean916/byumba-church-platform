@@ -75,6 +75,9 @@ class PasswordResetRequestView(APIView):
         email = serializer.validated_data["email"]
 
         user = User.objects.filter(email__iexact=email).first()
+        # The response is the same either way (privacy), so record what really
+        # happened in the server log, where only the site owner can see it.
+        logger.info("Password reset requested: %s", "account found" if user else "NO account with that email")
         if user:
             code = f"{secrets.randbelow(1_000_000):06d}"
             PasswordResetOTP.objects.create(user=user, code=code)
@@ -94,6 +97,9 @@ class PasswordResetRequestView(APIView):
                     recipient_list=[email],
                     fail_silently=False,
                 )
+                logger.info("Password reset email accepted by the mail provider (%s) for user id %s",
+                            settings.EMAIL_BACKEND.split(".")[-3] if "anymail" in settings.EMAIL_BACKEND else settings.EMAIL_BACKEND.split(".")[-2],
+                            user.id)
             except Exception as e:
                 # Never let email delivery problems leak to the response
                 # (would reveal whether the address is registered) - but do
