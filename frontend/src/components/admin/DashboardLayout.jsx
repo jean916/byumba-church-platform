@@ -29,6 +29,9 @@ export default function DashboardLayout() {
           <NavLink to="/admin/leadership" style={linkStyle}>Leadership</NavLink>
           <NavLink to="/admin/offerings" style={linkStyle}>Offerings</NavLink>
           <NavLink to="/admin/campaigns" style={linkStyle}>Campaigns</NavLink>
+          {(user?.role === 'SUPER_ADMIN' || user?.role === 'DIOCESE_ADMIN') && (
+            <NavLink to="/admin/diocese" style={linkStyle}>Diocese info</NavLink>
+          )}
         </nav>
         <button onClick={logout} className="btn btn-outline dash-logout" style={{ marginTop: '24px', color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', width: '100%' }}>
           Log out

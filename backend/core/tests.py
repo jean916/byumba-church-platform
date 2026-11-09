@@ -249,3 +249,62 @@ class AccountHygiene(BaseCase):
         self.assertEqual(r.status_code, 200)
         codes = [self.client.post("/api/accounts/password-reset-verify/", {"email": "alice@example.com", "code": "000000", "new_password": "Zebra-Quartz-81"}, format="json").status_code for _ in range(12)]
         self.assertIn(429, codes)
+
+
+class AboutAndContact(BaseCase):
+    def setUp(self):
+        super().setUp()
+        self.url = f"/api/dioceses/dioceses/{self.diocese.id}/"
+
+    def test_public_sees_about_and_contact_fields(self):
+        self.diocese.history = "Our story"
+        self.diocese.office_address = "Byumba town"
+        self.diocese.save()
+        d = [x for x in self.client.get("/api/dioceses/dioceses/").data if x["id"] == self.diocese.id][0]
+        for field in ("history", "vision", "mission", "office_address", "office_hours", "map_url", "contact_email"):
+            self.assertIn(field, d)
+        self.assertEqual((d["history"], d["office_address"]), ("Our story", "Byumba town"))
+
+    def test_only_diocese_admin_can_edit_diocese_info(self):
+        edit = {"history": "New history", "vision": "V", "intego_year": "", "contact_phone": "0788123456", "map_url": "https://maps.google.com/x"}
+        self.assertEqual(self.as_user(self.dioc_admin).patch(self.url, edit, format="multipart").status_code, 200)
+        self.diocese.refresh_from_db()
+        self.assertEqual((self.diocese.history, self.diocese.intego_year), ("New history", None))
+        for who in (self.admin1, self.leader1, self.alice):
+            self.assertEqual(self.as_user(who).patch(self.url, {"history": "hack"}, format="multipart").status_code, 403)
+        self.assertEqual(self.client.patch(self.url, {"history": "hack"}, format="json").status_code, 401)
+
+    def message(self, **extra):
+        return {"diocese": self.diocese.id, "name": "Marie Uwase", "email": "marie@example.com",
+                "phone": "0788000000", "message": "Muraho, I would like to visit.", **extra}
+
+    def test_contact_form_emails_the_diocese_with_reply_to(self):
+        from django.core import mail
+        self.diocese.contact_email = "office@byumba.example"
+        self.diocese.save()
+        r = self.client.post("/api/dioceses/contact/", self.message(), format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(mail.outbox), 1)
+        m = mail.outbox[0]
+        self.assertEqual((m.to, m.reply_to), (["office@byumba.example"], ["marie@example.com"]))
+        self.assertIn("Muraho", m.body)
+
+    def test_contact_form_blocks_spam_and_bad_input(self):
+        from django.core import mail
+        self.diocese.contact_email = "office@byumba.example"
+        self.diocese.save()
+        c = "/api/dioceses/contact/"
+        self.assertEqual(self.client.post(c, self.message(website="http://spam"), format="json").status_code, 200)
+        self.assertEqual(len(mail.outbox), 0)  # honeypot: looks sent, nothing delivered
+        self.assertEqual(self.client.post(c, self.message(email="not-an-email"), format="json").status_code, 400)
+        self.assertEqual(self.client.post(c, self.message(message="hi"), format="json").status_code, 400)
+        self.assertEqual(self.client.post(c, self.message(name="A\r\nBcc: evil@x.com"), format="json").status_code, 200)
+        self.assertNotIn("\n", mail.outbox[0].subject)  # no header injection
+
+    def test_contact_form_needs_a_configured_address_and_is_throttled(self):
+        c = "/api/dioceses/contact/"
+        self.assertEqual(self.client.post(c, self.message(), format="json").status_code, 503)  # no contact_email yet
+        self.diocese.contact_email = "office@byumba.example"
+        self.diocese.save()
+        codes = [self.client.post(c, self.message(), format="json").status_code for _ in range(7)]
+        self.assertIn(429, codes)

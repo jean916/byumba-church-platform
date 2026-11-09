@@ -1,9 +1,16 @@
-from rest_framework import viewsets
+import logging
+
+from django.conf import settings
+from django.core.mail import EmailMessage
+from rest_framework import permissions, viewsets
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 
 from core.permissions import DIOCESE_LEVEL, PARISH_LEVEL, SUPER, RoleScopedPermission, can_manage
 from .models import Diocese, Parish, Clergy
-from .serializers import DioceseSerializer, ParishSerializer, ClergySerializer
+from .serializers import ClergySerializer, ContactMessageSerializer, DioceseSerializer, ParishSerializer
 from .permissions import IsDioceseAdminOrReadOnly
 
 
@@ -93,3 +100,48 @@ class ParishViewSet(viewsets.ModelViewSet):
         if self.request.user.role not in DIOCESE_LEVEL:
             raise PermissionDenied("Only a diocese admin can remove a parish.")
         instance.delete()
+
+
+logger = logging.getLogger(__name__)
+
+
+class ContactMessageView(APIView):
+    """Public contact form -> an email to the diocese's contact address.
+    Throttled per visitor, with a hidden honeypot field to catch spam bots.
+    The visitor's address goes in Reply-To, so replying just works."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "contact"
+
+    def post(self, request):
+        serializer = ContactMessageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        if data.get("website"):  # a bot filled the hidden field - pretend it worked
+            return Response({"detail": "sent"})
+
+        diocese = Diocese.objects.filter(id=data["diocese"]).first()
+        if not diocese or not diocese.contact_email:
+            return Response({"detail": "Messages are not available right now."}, status=503)
+
+        name = " ".join(data["name"].split())  # no line breaks in headers
+        body = (
+            f"New message from the website contact form\n\n"
+            f"Name: {name}\nEmail: {data['email']}\nPhone: {data.get('phone') or '-'}\n\n"
+            f"{data['message']}\n"
+        )
+        try:
+            EmailMessage(
+                subject=f"Website message from {name}",
+                body=body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[diocese.contact_email],
+                reply_to=[data["email"]],
+            ).send(fail_silently=False)
+        except Exception:
+            logger.exception("Failed to deliver a contact-form message")
+            return Response({"detail": "We could not send your message. Please try again later."}, status=502)
+        logger.info("Contact-form message delivered to the diocese office")
+        return Response({"detail": "sent"})

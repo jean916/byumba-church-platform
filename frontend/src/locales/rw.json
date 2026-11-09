@@ -1,5 +1,14 @@
 {
-  "nav": { "home": "Ahabanza", "about": "Abo turibo", "parishes": "Amaparoki", "groups": "Amatsinda", "announcements": "Amatangazo", "login": "Injira", "register": "Iyandikishe" },
+  "nav": {
+    "home": "Ahabanza",
+    "about": "Abo turibo",
+    "parishes": "Amaparoki",
+    "groups": "Amatsinda",
+    "announcements": "Amatangazo",
+    "login": "Injira",
+    "register": "Iyandikishe",
+    "contact": "Twandikire"
+  },
   "home": {
     "hero_title": "Diyoseze y'Abanglikani ya Byumba",
     "hero_subtitle": "Diyoseze imwe, amaparoki menshi, umuryango umwe muri Kristo.",
@@ -18,8 +27,48 @@
   },
   "register": {
     "title": "Fungura konti yawe y'umukirisitu",
-    "first_name": "Izina ry'idini", "last_name": "Izina ry'umuryango", "username": "Izina ukoresha",
-    "email": "Imeyili", "phone": "Numero ya telefoni", "parish": "Paroki yawe",
-    "password": "Ijambo ry'ibanga", "submit": "Iyandikishe"
+    "first_name": "Izina ry'idini",
+    "last_name": "Izina ry'umuryango",
+    "username": "Izina ukoresha",
+    "email": "Imeyili",
+    "phone": "Numero ya telefoni",
+    "parish": "Paroki yawe",
+    "password": "Ijambo ry'ibanga",
+    "submit": "Iyandikishe"
+  },
+  "about": {
+    "title": "Ibyerekeye Diyoseze yacu",
+    "bishop": "Umushumba wa Diyoseze",
+    "parishes": "Amaparoki",
+    "archdeaconries": "Archdeaconries",
+    "history": "Amateka yacu",
+    "vision": "Icyerekezo cyacu",
+    "mission": "Inshingano yacu",
+    "archdeaconries_title": "Archdeaconries zacu",
+    "archdeacon": "Archdeacon",
+    "soon": "Andi makuru ku Diyoseze yacu azashyirwa hano vuba.",
+    "contact_cta": "Twandikire"
+  },
+  "contact": {
+    "title": "Twandikire",
+    "intro": "Tuzishimira kumva icyo mushaka kutubwira. Mushobora kuvugana n'ibiro bya Diyoseze cyangwa na paroki yanyu iri hafi.",
+    "phone": "Telefoni",
+    "email": "Imeri",
+    "address": "Aho ibiro biherereye",
+    "hours": "Amasaha y'akazi",
+    "map": "Reba ku ikarita",
+    "follow": "Dukurikire",
+    "form_title": "Twoherereze ubutumwa",
+    "name": "Amazina yawe",
+    "email_label": "Imeri yawe",
+    "phone_label": "Telefoni (si ngombwa)",
+    "message": "Ubutumwa",
+    "send": "Ohereza",
+    "sending": "Birimo koherezwa…",
+    "sent": "Murakoze! Ubutumwa bwanyu bwoherejwe. Tuzabusubiza vuba.",
+    "error": "Mutubabarire, ubutumwa ntibwabashije koherezwa. Mwongere mugerageze nyuma.",
+    "too_many": "Mwohereje ubutumwa bwinshi. Mwongere mugerageze nyuma.",
+    "parish_title": "Telefoni z'amaparoki",
+    "soon": "Amakuru yo kutugeraho azashyirwa hano vuba."
   }
 }

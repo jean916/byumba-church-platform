@@ -179,6 +179,8 @@ REST_FRAMEWORK = {
         # Password-reset request + code check: a 6-digit code must not be
         # guessable by hammering the endpoint.
         "password_reset": "10/hour",
+        # Public contact form: per visitor, keeps the diocese inbox free of spam.
+        "contact": "5/hour",
     },
 }
 

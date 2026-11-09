@@ -17,8 +17,19 @@ class Diocese(models.Model):
         help_text="Wide photo of the church building, used as the homepage background",
         validators=[validate_image_file],
     )
-    contact_email = models.EmailField(blank=True)
+    contact_email = models.EmailField(
+        blank=True, help_text="Public contact email. Messages from the website's Contact form are delivered here.",
+    )
     contact_phone = models.CharField(max_length=10, blank=True, validators=[validate_rwanda_phone])
+
+    # About / Contact pages - all optional; a section only appears on the
+    # public page once it has been filled in.
+    history = models.TextField(blank=True, help_text="Our history / story, shown on the About page")
+    vision = models.TextField(blank=True)
+    mission = models.TextField(blank=True)
+    office_address = models.CharField(max_length=300, blank=True, help_text="Diocesan office address")
+    office_hours = models.CharField(max_length=200, blank=True, help_text="e.g. Monday-Friday, 8:00-17:00")
+    map_url = models.URLField(blank=True, help_text="A Google Maps link to the diocesan office")
 
     # "Intego" - the diocese's annual theme, set fresh each year around a
     # guiding Bible verse. Displayed prominently on the homepage.

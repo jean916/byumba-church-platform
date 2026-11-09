@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ArchDivider from './ArchDivider'
 import { useDiocese } from '../context/DioceseContext'
 
@@ -29,6 +31,8 @@ function TikTokIcon() {
 
 export default function Footer() {
   const diocese = useDiocese()
+  const { t } = useTranslation()
+  const footLink = { color: 'var(--color-gold-light)' }
 
   const iconLinkStyle = {
     color: 'var(--color-white)',
@@ -49,9 +53,18 @@ export default function Footer() {
     <footer style={{ background: 'var(--color-indigo-950)', color: 'var(--color-white)', marginTop: 'var(--space-6)' }}>
       <ArchDivider />
       <div className="container" style={{ padding: '32px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <p style={{ color: 'inherit', margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
-          Anglican Diocese of Byumba &middot; Rwanda
-        </p>
+        <div>
+          <p style={{ color: 'inherit', margin: 0, fontSize: '0.9rem', opacity: 0.8 }}>
+            Anglican Diocese of Byumba &middot; Rwanda
+          </p>
+          <p style={{ color: 'inherit', margin: '8px 0 0', fontSize: '0.88rem' }}>
+            <Link to="/about" style={footLink}>{t('nav.about')}</Link>
+            {' · '}
+            <Link to="/contact" style={footLink}>{t('nav.contact')}</Link>
+            {diocese?.contact_phone && <>{' · '}<a href={`tel:${diocese.contact_phone}`} style={footLink}>{diocese.contact_phone}</a></>}
+            {diocese?.contact_email && <>{' · '}<a href={`mailto:${diocese.contact_email}`} style={footLink}>{diocese.contact_email}</a></>}
+          </p>
+        </div>
         {hasSocial && (
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {diocese.facebook_url && (

@@ -45,12 +45,14 @@ export default function Navbar() {
         </button>
         <nav id="site-nav" className={`site-nav${open ? ' open' : ''}`} onClick={() => setOpen(false)}>
           <NavLink to="/" style={linkStyle}>{t('nav.home')}</NavLink>
+          <NavLink to="/about" style={linkStyle}>{t('nav.about')}</NavLink>
           <NavLink to="/parishes" style={linkStyle}>{t('nav.parishes')}</NavLink>
           <NavLink to="/groups" style={linkStyle}>{t('nav.groups')}</NavLink>
           <NavLink to="/announcements" style={linkStyle}>{t('nav.announcements')}</NavLink>
           <NavLink to="/events" style={linkStyle}>Events</NavLink>
           <NavLink to="/sermons" style={linkStyle}>Sermons</NavLink>
           <NavLink to="/give" style={linkStyle}>Give</NavLink>
+          <NavLink to="/contact" style={linkStyle}>{t('nav.contact')}</NavLink>
           {user ? (
             <NavLink to={isAdmin ? '/admin' : '/account'} style={linkStyle}>
               {isAdmin ? 'Admin' : 'My Account'}

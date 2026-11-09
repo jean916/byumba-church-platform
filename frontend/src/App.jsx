@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
+import About from './pages/About'
+import Contact from './pages/Contact'
 import Parishes from './pages/Parishes'
 import ParishDetail from './pages/ParishDetail'
 import Groups from './pages/Groups'
@@ -22,6 +24,7 @@ import AdminLeadership from './pages/admin/AdminLeadership'
 import AdminEvents from './pages/admin/AdminEvents'
 import AdminSermons from './pages/admin/AdminSermons'
 import AdminCampaigns from './pages/admin/AdminCampaigns'
+import AdminDiocese from './pages/admin/AdminDiocese'
 import DashboardLayout from './components/admin/DashboardLayout'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
@@ -38,6 +41,8 @@ export default function App() {
         <main style={{ flex: 1 }}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/parishes" element={<Parishes />} />
             <Route path="/parishes/:slug" element={<ParishDetail />} />
             <Route path="/groups" element={<Groups />} />
@@ -60,6 +65,7 @@ export default function App() {
               <Route path="events" element={<AdminEvents />} />
               <Route path="sermons" element={<AdminSermons />} />
               <Route path="campaigns" element={<AdminCampaigns />} />
+              <Route path="diocese" element={<AdminDiocese />} />
             </Route>
           </Routes>
         </main>
