@@ -98,6 +98,9 @@ class Clergy(models.Model):
         ASSISTANT_PASTOR = "ASSISTANT_PASTOR", "Assistant Pastor"
         DEACON = "DEACON", "Deacon"
         EVANGELIST = "EVANGELIST", "Evangelist"
+        # Lay leaders at diocese level, shown on the About page next to the clergy.
+        MOTHERS_UNION_LEADER = "MOTHERS_UNION_LEADER", "Mothers' Union leader (diocese)"
+        FATHERS_UNION_LEADER = "FATHERS_UNION_LEADER", "Fathers' Union leader (diocese)"
         OTHER = "OTHER", "Other"
 
     diocese = models.ForeignKey(Diocese, on_delete=models.CASCADE, related_name="clergy")

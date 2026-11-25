@@ -5,6 +5,12 @@ import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import GiveForm from '../components/GiveForm'
 import ArchDivider from '../components/ArchDivider'
+import LeaderCard from '../components/LeaderCard'
+import { useGroupTypeLogos } from '../api/useGroupTypeLogos'
+import GroupUpdateCard from '../components/GroupUpdateCard'
+
+// Pastors first, then the rest of the parish's clergy.
+const LEVEL_ORDER = ['PARISH_PASTOR', 'ASSISTANT_PASTOR', 'DEACON', 'EVANGELIST', 'OTHER', 'ARCHDEACON', 'BISHOP']
 
 // The six standard group types every parish is expected to have (or be
 // working toward) - shown in this fixed order regardless of which ones
@@ -23,6 +29,8 @@ export default function ParishDetail() {
   const [sermons, setSermons] = useState([])
   const [clergy, setClergy] = useState([])
   const [campaigns, setCampaigns] = useState([])
+  const [groupNews, setGroupNews] = useState([])
+  const typeLogos = useGroupTypeLogos()
   const [notFound, setNotFound] = useState(false)
 
   const loadCampaigns = () => client.get(`/offerings/campaigns/?parish=${slug}&active=true`).then(res => setCampaigns(res.data)).catch(() => {})
@@ -44,14 +52,8 @@ export default function ParishDetail() {
       client.get(`/content/events/?parish=${slug}`).then(res => setEvents(res.data)).catch(() => {})
       client.get(`/content/sermons/?parish=${slug}`).then(res => setSermons(res.data)).catch(() => {})
       loadCampaigns()
-      // Clergy aren't filterable by parish on the backend yet, only by
-      // diocese - so fetch the (small) diocese-wide list and filter here.
-      // Hardcoded to "byumba" since this is currently a single-diocese
-      // deployment; would need to come from the diocese record once a
-      // second diocese is added.
-      client.get('/dioceses/clergy/?diocese=byumba')
-        .then(res => setClergy(res.data.filter(c => c.parish === match.id)))
-        .catch(() => {})
+      client.get(`/dioceses/clergy/?parish=${slug}`).then(res => setClergy(res.data)).catch(() => {})
+      client.get(`/content/group-updates/?parish=${slug}&limit=6`).then(res => setGroupNews(res.data)).catch(() => {})
     }).catch(() => setNotFound(true))
   }, [slug])
 
@@ -100,7 +102,7 @@ export default function ParishDetail() {
       <div className="container" style={{ padding: '40px 24px', maxWidth: '760px' }}>
         <div className="card" style={{ marginTop: '0', marginBottom: '32px' }}>
           {parish.location && <p style={{ margin: '0 0 6px' }}><strong>Location:</strong> {parish.location}</p>}
-          {parish.parish_pastor && <p style={{ margin: '0 0 6px' }}><strong>Pastor:</strong> {parish.parish_pastor}</p>}
+          {parish.parish_pastor && clergy.length === 0 && <p style={{ margin: '0 0 6px' }}><strong>Pastor:</strong> {parish.parish_pastor}</p>}
           {parish.service_times && <p style={{ margin: '0 0 6px' }}><strong>Service times:</strong> {parish.service_times}</p>}
           {parish.contact_phone && <p style={{ margin: 0 }}><strong>Contact:</strong> {parish.contact_phone}</p>}
           {!parish.location && !parish.parish_pastor && !parish.service_times && !parish.contact_phone && (
@@ -110,15 +112,11 @@ export default function ParishDetail() {
 
         {clergy.length > 0 && (
           <>
-            <h2>Clergy</h2>
-            <div style={{ display: 'grid', gap: '10px', marginBottom: '32px' }}>
-              {clergy.map(c => (
-                <div key={c.id} className="card">
-                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{c.name}</h3>
-                  <p style={{ margin: 0, fontSize: '0.9rem' }}>{c.level_display || c.level}</p>
-                  {c.contact_phone && <p style={{ margin: 0, fontSize: '0.85rem' }}>{c.contact_phone}</p>}
-                </div>
-              ))}
+            <h2>{t('parish.leaders')}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+              {[...clergy]
+                .sort((x, y) => LEVEL_ORDER.indexOf(x.level) - LEVEL_ORDER.indexOf(y.level))
+                .map(c => <LeaderCard key={c.id} person={c} role={c.level_display || c.level} />)}
             </div>
           </>
         )}
@@ -129,7 +127,10 @@ export default function ParishDetail() {
             const match = groups.find(g => g.group_type === type)
             return (
               <div key={type} className="card" style={{ opacity: match ? 1 : 0.5 }}>
-                <h3 style={{ margin: 0, fontSize: '1rem' }}>{t(`groups.${type}`, type)}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {(match?.logo || typeLogos[type]) && <img src={match?.logo || typeLogos[type]} alt="" loading="lazy" style={{ height: '36px', width: '36px', objectFit: 'contain', flexShrink: 0 }} />}
+                  <h3 style={{ margin: 0, fontSize: '1rem' }}>{t(`groups.${type}`, type)}</h3>
+                </div>
                 {match ? (
                   <>
                     <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{match.name}</p>
@@ -156,6 +157,15 @@ export default function ParishDetail() {
               </div>
             ))}
           </div>
+        )}
+
+        {groupNews.length > 0 && (
+          <>
+            <h2>{t('parish.group_news')}</h2>
+            <div style={{ display: 'grid', gap: '12px', marginBottom: '32px' }}>
+              {groupNews.map(u => <GroupUpdateCard key={u.id} update={u} showGroup />)}
+            </div>
+          </>
         )}
 
         {events.length > 0 && (

@@ -8,7 +8,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 
-from core.permissions import DIOCESE_LEVEL, PARISH_LEVEL, SUPER, RoleScopedPermission, can_manage
+from core.permissions import DIOCESE_LEVEL, PARISH, PARISH_LEVEL, SUPER, RoleScopedPermission, ScopedWriteMixin, can_manage
 from .models import Diocese, Parish, Clergy
 from .serializers import ClergySerializer, ContactMessageSerializer, DioceseSerializer, ParishSerializer
 from .permissions import IsDioceseAdminOrReadOnly
@@ -34,36 +34,37 @@ class DioceseViewSet(viewsets.ModelViewSet):
         instance.delete()
 
 
-class ClergyViewSet(viewsets.ModelViewSet):
-    """Public read; writes restricted to the diocese's own admin."""
+# What a Parish Admin may record for their own parish. Bishops, archdeacons and
+# diocesan union leaders are managed by the diocese office.
+PARISH_ADMIN_LEVELS = {"PARISH_PASTOR", "ASSISTANT_PASTOR", "DEACON", "EVANGELIST", "OTHER"}
+
+
+class ClergyViewSet(ScopedWriteMixin, viewsets.ModelViewSet):
+    """Public read. The diocese office manages everyone; a Parish Admin may add
+    and edit the pastors/deacons of their OWN parish (with photo, phone, notes)
+    so a transfer does not have to wait for the diocese office."""
 
     serializer_class = ClergySerializer
-    permission_classes = [IsDioceseAdminOrReadOnly]
+    write_roles = PARISH_LEVEL
+    scope_fields = ("parish", "diocese")
 
     def get_queryset(self):
         qs = Clergy.objects.select_related("diocese", "parish").all()
         diocese_slug = self.request.query_params.get("diocese")
         if diocese_slug:
             qs = qs.filter(diocese__slug=diocese_slug)
+        parish_slug = self.request.query_params.get("parish")
+        if parish_slug:
+            qs = qs.filter(parish__slug=parish_slug)
         return qs
 
-    def _check(self, serializer):
-        inst, data = serializer.instance, serializer.validated_data
-        diocese = data.get("diocese", getattr(inst, "diocese", None))
-        parish = data.get("parish", getattr(inst, "parish", None))
-        if not can_manage(self.request.user, None, diocese):
-            raise PermissionDenied("You can only manage clergy of your own diocese.")
-        if parish is not None and diocese is not None and parish.diocese_id != diocese.id:
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError({"parish": "This parish is not in the chosen diocese."})
-
-    def perform_create(self, serializer):
-        self._check(serializer)
-        serializer.save()
-
-    def perform_update(self, serializer):
-        self._check(serializer)
-        serializer.save()
+    def check_write_scope(self, serializer):
+        super().check_write_scope(serializer)
+        if self.request.user.role == PARISH:
+            inst = serializer.instance
+            level = serializer.validated_data.get("level", getattr(inst, "level", None))
+            if level not in PARISH_ADMIN_LEVELS:
+                raise PermissionDenied("Only the diocese office can add bishops, archdeacons or diocesan leaders.")
 
 
 class ParishViewSet(viewsets.ModelViewSet):

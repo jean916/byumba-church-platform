@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
+import { explainError } from '../../api/errors'
+import { prepareImage } from '../../api/images'
 import { useAuth } from '../../context/AuthContext'
 
 const emptyForm = { parish: '', group_type: 'YOUTH_UNION', name: '', description: '', leader_name: '', leader_contact: '' }
@@ -15,7 +17,54 @@ function GroupManagePanel({ group, onClose, onChanged }) {
   const [photoCaption, setPhotoCaption] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const refresh = () => onChanged()
+  // Meeting reports: a title, date, text and photos shown on the public site.
+  const today = () => new Date().toLocaleDateString('en-CA')
+  const [updates, setUpdates] = useState([])
+  const [uTitle, setUTitle] = useState('')
+  const [uDate, setUDate] = useState(today())
+  const [uText, setUText] = useState('')
+  const [uFiles, setUFiles] = useState([])
+  const [fileKey, setFileKey] = useState(0)
+  const [uStatus, setUStatus] = useState('')
+
+  const loadUpdates = () => client.get(`/content/group-updates/?group=${group.id}`).then(r => setUpdates(r.data)).catch(() => {})
+  useEffect(() => { loadUpdates() }, [group.id])
+
+  const postUpdate = async e => {
+    e.preventDefault()
+    if (!uTitle.trim()) return
+    setBusy(true)
+    setUStatus('Posting…')
+    let created
+    try {
+      created = (await client.post('/content/group-updates/', { group: group.id, title: uTitle, text: uText, event_date: uDate })).data
+    } catch (err) {
+      setUStatus(explainError(err))
+      setBusy(false)
+      return
+    }
+    try {
+      for (let i = 0; i < uFiles.length; i++) {
+        setUStatus(`Uploading photo ${i + 1} of ${uFiles.length}…`)
+        const data = new FormData()
+        data.append('update', created.id)
+        data.append('image', await prepareImage(uFiles[i]))
+        await client.post('/content/group-update-photos/', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      }
+      setUStatus('Posted. It is now on the public website.')
+    } catch (err) {
+      setUStatus(`The report was posted, but a photo failed: ${explainError(err)} You can delete the report and try again.`)
+    }
+    setUTitle(''); setUText(''); setUDate(today()); setUFiles([]); setFileKey(k => k + 1)
+    loadUpdates()
+    setBusy(false)
+  }
+
+  const removeUpdate = async id => {
+    if (!confirm('Delete this report and its photos?')) return
+    await client.delete(`/content/group-updates/${id}/`)
+    loadUpdates()
+  }
 
   const addMember = async e => {
     e.preventDefault()
@@ -78,7 +127,29 @@ function GroupManagePanel({ group, onClose, onChanged }) {
         <button onClick={onClose} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px' }}>Close</button>
       </div>
 
-      <h4>Members ({group.members_list?.length || 0})</h4>
+      <h4>Meeting reports &amp; news ({updates.length})</h4>
+      <p style={{ fontSize: '0.85rem' }}>After a meeting or activity, post a few lines and photos. They appear on the Groups page and on the parish page.</p>
+      <ul style={{ paddingLeft: '18px' }}>
+        {updates.map(u => (
+          <li key={u.id}>
+            {u.event_date} — {u.title} ({u.photos?.length || 0} photos){' '}
+            <button onClick={() => removeUpdate(u.id)} style={{ background: 'none', border: 'none', color: 'crimson', cursor: 'pointer', fontSize: '0.85rem' }}>delete</button>
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={postUpdate} style={{ display: 'grid', gap: '8px', maxWidth: '520px' }}>
+        <input style={{ ...inputStyle, marginRight: 0 }} placeholder="Title, e.g. Annual meeting" value={uTitle} onChange={e => setUTitle(e.target.value)} required maxLength={200} />
+        <label style={{ fontSize: '0.85rem' }}>Date of the meeting
+          <input type="date" style={{ ...inputStyle, marginLeft: '8px' }} value={uDate} onChange={e => setUDate(e.target.value)} required />
+        </label>
+        <textarea style={{ ...inputStyle, marginRight: 0, minHeight: '110px', font: 'inherit' }} placeholder="What happened? Write a few lines about the meeting." value={uText} onChange={e => setUText(e.target.value)} />
+        <input key={fileKey} type="file" accept="image/*" multiple onChange={e => setUFiles(Array.from(e.target.files).slice(0, 12))} />
+        <span style={{ fontSize: '0.8rem' }}>{uFiles.length > 0 ? `${uFiles.length} photo(s) chosen (up to 12). Large photos are shrunk automatically.` : 'You can choose several photos at once (up to 12).'}</span>
+        <div><button className="btn btn-gold" style={{ padding: '6px 14px' }} disabled={busy}>{busy ? 'Please wait…' : 'Post report'}</button></div>
+        {uStatus && <p style={{ margin: 0, fontSize: '0.9rem' }}>{uStatus}</p>}
+      </form>
+
+      <h4 style={{ marginTop: '28px' }}>Members ({group.members_list?.length || 0})</h4>
       <ul style={{ paddingLeft: '18px' }}>
         {group.members_list?.map(m => (
           <li key={m.id}>
@@ -133,6 +204,8 @@ export default function AdminGroups() {
   const [parishes, setParishes] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [photoFile, setPhotoFile] = useState(null)
+  const [logoFile, setLogoFile] = useState(null)
+  const [editLogoFile, setEditLogoFile] = useState(null)
   const [status, setStatus] = useState('')
   const [managingId, setManagingId] = useState(null)
   const [editingId, setEditingId] = useState(null)
@@ -158,13 +231,15 @@ export default function AdminGroups() {
     try {
       const data = new FormData()
       Object.entries(form).forEach(([k, v]) => data.append(k, v))
-      if (photoFile) data.append('photo', photoFile)
+      if (photoFile) data.append('photo', await prepareImage(photoFile))
+      if (logoFile) data.append('logo', await prepareImage(logoFile))
 
       await client.post('/content/groups/', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       setForm({ ...emptyForm, parish: form.parish })
       setPhotoFile(null)
+      setLogoFile(null)
       setStatus('done')
       load()
     } catch {
@@ -183,6 +258,7 @@ export default function AdminGroups() {
       description: g.description, leader_name: g.leader_name, leader_contact: g.leader_contact,
     })
     setEditPhotoFile(null)
+    setEditLogoFile(null)
     setEditStatus('')
     setManagingId(null)
   }
@@ -195,7 +271,8 @@ export default function AdminGroups() {
     try {
       const data = new FormData()
       Object.entries(editForm).forEach(([k, v]) => data.append(k, v))
-      if (editPhotoFile) data.append('photo', editPhotoFile)
+      if (editPhotoFile) data.append('photo', await prepareImage(editPhotoFile))
+      if (editLogoFile) data.append('logo', await prepareImage(editLogoFile))
       await client.patch(`/content/groups/${editingId}/`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
@@ -232,6 +309,8 @@ export default function AdminGroups() {
                 <input style={inputStyle} name="leader_contact" value={editForm.leader_contact} onChange={handleEditChange} />
                 <label>Replace cover photo (optional)</label>
                 <input style={inputStyle} type="file" accept="image/*" onChange={e => setEditPhotoFile(e.target.files[0])} />
+                <label>Replace logo (optional)</label>
+                <input style={inputStyle} type="file" accept="image/*" onChange={e => setEditLogoFile(e.target.files[0])} />
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <button className="btn btn-gold" type="submit" disabled={editStatus === 'saving'} style={{ padding: '6px 14px', fontSize: '0.85rem' }}>Save</button>
                   <button type="button" onClick={cancelEdit} className="btn btn-outline" style={{ color: 'var(--color-indigo-900)', borderColor: 'var(--color-indigo-900)', padding: '6px 14px', fontSize: '0.85rem' }}>Cancel</button>
@@ -243,6 +322,7 @@ export default function AdminGroups() {
                 {g.photo && (
                   <img src={g.photo} alt={g.name} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '6px', marginBottom: '10px' }} />
                 )}
+                {g.logo && <img src={g.logo} alt="" style={{ height: '44px', width: '44px', objectFit: 'contain', marginBottom: '6px' }} />}
                 <h3 style={{ margin: 0 }}>{g.name}</h3>
                 <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type}</p>
                 <p style={{ margin: 0, fontSize: '0.9rem' }}>{g.group_type === 'CHOIR' ? 'President' : 'Leader'}: {g.leader_name}</p>
@@ -293,6 +373,8 @@ export default function AdminGroups() {
         <input style={inputStyle} name="leader_contact" value={form.leader_contact} onChange={handleChange} />
         <label>Cover photo (optional)</label>
         <input style={inputStyle} type="file" accept="image/*" onChange={e => setPhotoFile(e.target.files[0])} />
+        <label>Group logo (optional)</label>
+        <input style={inputStyle} type="file" accept="image/*" onChange={e => setLogoFile(e.target.files[0])} />
         <button className="btn btn-gold" type="submit" disabled={status === 'saving'}>Add group</button>
         {status === 'error' && <p style={{ color: 'crimson' }}>Something went wrong — check the fields and try again.</p>}
       </form>

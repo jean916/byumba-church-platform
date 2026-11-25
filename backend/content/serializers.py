@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Group, Announcement, Event, GroupMember, Song, GroupPhoto, Sermon
+from .models import (
+    Group, Announcement, Event, GroupMember, Song, GroupPhoto, Sermon, GroupUpdate, GroupUpdatePhoto,
+    GroupTypeLogo,
+)
 
 
 class GroupMemberSerializer(serializers.ModelSerializer):
@@ -49,3 +52,27 @@ class SermonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sermon
         fields = "__all__"
+
+
+class GroupUpdatePhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupUpdatePhoto
+        fields = ["id", "update", "image", "caption"]
+
+
+class GroupUpdateSerializer(serializers.ModelSerializer):
+    photos = GroupUpdatePhotoSerializer(many=True, read_only=True)
+    group_name = serializers.CharField(source="group.name", read_only=True)
+    parish = serializers.IntegerField(source="group.parish_id", read_only=True)
+
+    class Meta:
+        model = GroupUpdate
+        # created_by is deliberately not exposed publicly.
+        fields = ["id", "group", "group_name", "parish", "title", "text", "event_date", "created_at", "photos"]
+        read_only_fields = ["created_at"]
+
+
+class GroupTypeLogoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupTypeLogo
+        fields = ["id", "diocese", "group_type", "logo"]

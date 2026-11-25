@@ -24,7 +24,9 @@
     "YOUTH_UNION": "Youth Union",
     "CHOIR": "Amatorero (Choir)",
     "CHILDREN": "Children / Sunday School",
-    "GFS": "Girls' Friendly Society (GFS)"
+    "GFS": "Girls' Friendly Society (GFS)",
+    "updates": "Meeting reports ({{n}})",
+    "hide_updates": "Hide reports"
   },
   "register": {
     "title": "Create your member account",
@@ -48,7 +50,12 @@
     "archdeaconries_title": "Our archdeaconries",
     "archdeacon": "Archdeacon",
     "soon": "More about our diocese will be published here soon.",
-    "contact_cta": "Get in touch"
+    "contact_cta": "Get in touch",
+    "leaders_bishop": "Our Bishop",
+    "leaders_archdeacons": "Archdeacons",
+    "leaders_unions": "Mothers' Union and Fathers' Union",
+    "leaders_pastors": "Our pastors",
+    "pastor_of": "Pastor, {{parish}}"
   },
   "contact": {
     "title": "Contact us",
@@ -71,5 +78,9 @@
     "too_many": "You have sent several messages. Please try again later.",
     "parish_title": "Parish phone numbers",
     "soon": "Contact details will be published here soon."
+  },
+  "parish": {
+    "leaders": "Pastors & leaders",
+    "group_news": "News from our groups"
   }
 }

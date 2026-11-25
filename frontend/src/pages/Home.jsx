@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import client from '../api/client'
+import { useGroupTypeLogos } from '../api/useGroupTypeLogos'
 import ArchDivider from '../components/ArchDivider'
 import { useDiocese } from '../context/DioceseContext'
 
@@ -17,6 +18,7 @@ export default function Home() {
 
   const groupTypes = ['MOTHERS_UNION', 'FATHERS_UNION', 'YOUTH_UNION', 'CHOIR', 'CHILDREN', 'GFS']
   const diocese = useDiocese()
+  const typeLogos = useGroupTypeLogos()
 
   return (
     <>
@@ -78,8 +80,11 @@ export default function Home() {
         <h2>{t('home.our_groups')}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '24px' }}>
           {groupTypes.map(gt => (
-            <div key={gt} className="card">
-              <h3 style={{ fontSize: '1.05rem' }}>{t(`groups.${gt}`)}</h3>
+            <div key={gt} className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {typeLogos[gt] && (
+                <img src={typeLogos[gt]} alt="" loading="lazy" style={{ height: '56px', width: '56px', objectFit: 'contain', flexShrink: 0 }} />
+              )}
+              <h3 style={{ fontSize: '1.05rem', margin: 0 }}>{t(`groups.${gt}`)}</h3>
             </div>
           ))}
         </div>

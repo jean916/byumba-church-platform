@@ -1,5 +1,7 @@
 from core.validators import validate_image_file
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Group(models.Model):
@@ -23,6 +25,7 @@ class Group(models.Model):
     leader_name = models.CharField(max_length=200, blank=True)
     leader_contact = models.CharField(max_length=100, blank=True)
     photo = models.ImageField(upload_to="groups/photos/", null=True, blank=True, validators=[validate_image_file])
+    logo = models.ImageField(upload_to="groups/logos/", null=True, blank=True, validators=[validate_image_file])
 
     def __str__(self):
         return f"{self.name} - {self.parish.name}"
@@ -135,3 +138,48 @@ class Sermon(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class GroupUpdate(models.Model):
+    """A report a group posts after a meeting or activity: a title, a date, some
+    text and photos. Shown on the Groups page and on the parish page."""
+
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="updates")
+    title = models.CharField(max_length=200)
+    text = models.TextField(blank=True)
+    event_date = models.DateField(default=timezone.localdate, help_text="When the meeting or activity took place")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-event_date", "-id"]
+
+    def __str__(self):
+        return f"{self.group.name}: {self.title}"
+
+
+class GroupUpdatePhoto(models.Model):
+    update = models.ForeignKey(GroupUpdate, on_delete=models.CASCADE, related_name="photos")
+    image = models.ImageField(upload_to="groups/updates/", validators=[validate_image_file])
+    caption = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+
+class GroupTypeLogo(models.Model):
+    """One diocese-wide emblem per kind of group (Mothers' Union, Youth Union...).
+    Shown on the home page, and used on any parish group that has not uploaded
+    a logo of its own."""
+
+    diocese = models.ForeignKey("dioceses.Diocese", on_delete=models.CASCADE, related_name="group_type_logos")
+    group_type = models.CharField(max_length=20, choices=Group.GroupType.choices)
+    logo = models.ImageField(upload_to="groups/type-logos/", validators=[validate_image_file])
+
+    class Meta:
+        unique_together = ("diocese", "group_type")
+
+    def __str__(self):
+        return f"{self.diocese} - {self.get_group_type_display()}"

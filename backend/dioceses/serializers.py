@@ -3,11 +3,13 @@ from .models import Diocese, Parish, Clergy
 
 
 class ClergySerializer(serializers.ModelSerializer):
+    level_display = serializers.CharField(source="get_level_display", read_only=True)
+
     class Meta:
         model = Clergy
         fields = [
             "id", "diocese", "parish", "name", "level", "archdeaconry",
-            "contact_phone", "contact_email", "photo", "notes",
+            "contact_phone", "contact_email", "photo", "notes", "level_display",
         ]
 
 

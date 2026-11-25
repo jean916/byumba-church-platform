@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
 import { explainError } from '../../api/errors'
+import { prepareImage } from '../../api/images'
 import { useAuth } from '../../context/AuthContext'
 
 const TEXT_FIELDS = [
@@ -11,6 +12,85 @@ const TEXT_FIELDS = [
 ]
 
 const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '10px', font: 'inherit' }
+
+const GROUP_TYPES = [
+  ['MOTHERS_UNION', "Mothers' Union"], ['FATHERS_UNION', "Fathers' Union"], ['YOUTH_UNION', 'Youth Union'],
+  ['CHOIR', 'Choir (Amatorero)'], ['CHILDREN', 'Children / Sunday School'], ['GFS', "Girls' Friendly Society (GFS)"],
+]
+
+// One emblem per kind of group, shown on the home page and used by any parish
+// group that has not uploaded its own logo.
+function GroupTypeLogos({ diocese }) {
+  const [logos, setLogos] = useState({})
+  const [files, setFiles] = useState({})
+  const [status, setStatus] = useState({})
+  const say = (type, msg) => setStatus(s => ({ ...s, [type]: msg }))
+
+  const load = () => client.get(`/content/group-type-logos/?diocese=${diocese.slug}`).then(r => {
+    const map = {}
+    r.data.forEach(l => { map[l.group_type] = l })
+    setLogos(map)
+  }).catch(() => {})
+  useEffect(() => { load() }, [diocese.id])
+
+  const save = async type => {
+    if (!files[type]) return
+    say(type, 'Saving…')
+    try {
+      const data = new FormData()
+      data.append('logo', await prepareImage(files[type]))
+      const config = { headers: { 'Content-Type': 'multipart/form-data' } }
+      if (logos[type]) {
+        await client.patch(`/content/group-type-logos/${logos[type].id}/`, data, config)
+      } else {
+        data.append('diocese', diocese.id)
+        data.append('group_type', type)
+        await client.post('/content/group-type-logos/', data, config)
+      }
+      setFiles(f => ({ ...f, [type]: null }))
+      say(type, 'Saved.')
+      load()
+    } catch (err) {
+      say(type, explainError(err))
+    }
+  }
+
+  const remove = async type => {
+    if (!confirm('Remove this logo?')) return
+    await client.delete(`/content/group-type-logos/${logos[type].id}/`)
+    say(type, '')
+    load()
+  }
+
+  return (
+    <div style={{ marginTop: '48px' }}>
+      <h2>Logos of groups &amp; unions</h2>
+      <p>One emblem for each kind of group. They appear on the home page, and on any parish group that has no logo of its own. Each parish can still give its own group a different logo.</p>
+      <div style={{ display: 'grid', gap: '12px' }}>
+        {GROUP_TYPES.map(([type, label]) => (
+          <div key={type} className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {logos[type] && <img src={logos[type].logo} alt={`${label} logo`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />}
+            </div>
+            <div style={{ flex: '1 1 220px' }}>
+              <strong>{label}</strong>
+              <div>
+                <input key={logos[type]?.logo || 'none'} type="file" accept="image/*" onChange={e => setFiles(f => ({ ...f, [type]: e.target.files[0] }))} />
+              </div>
+              {status[type] && <p style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>{status[type]}</p>}
+            </div>
+            <button className="btn btn-gold" style={{ padding: '6px 14px' }} disabled={!files[type]} onClick={() => save(type)}>
+              {logos[type] ? 'Replace logo' : 'Save logo'}
+            </button>
+            {logos[type] && (
+              <button onClick={() => remove(type)} style={{ background: 'none', border: '1px solid crimson', color: 'crimson', borderRadius: '4px', padding: '5px 12px' }}>Remove</button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function AdminDiocese() {
   const { user } = useAuth()
@@ -116,6 +196,8 @@ export default function AdminDiocese() {
         {status === 'done' && <p role="status" style={{ color: 'var(--color-hill-green-light)', fontWeight: 600 }}>Saved. Reload the public pages to see the changes.</p>}
         {status === 'error' && <p role="alert" style={{ color: '#b00020' }}>{errorMsg}</p>}
       </form>
+
+      <GroupTypeLogos diocese={diocese} />
     </div>
   )
 }

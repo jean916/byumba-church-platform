@@ -23,7 +23,9 @@
     "YOUTH_UNION": "Urubyiruko (Youth Union)",
     "CHOIR": "Amatorero",
     "CHILDREN": "Abana / Sunday School",
-    "GFS": "Umuryango w'Incuti z'Abakobwa (GFS)"
+    "GFS": "Umuryango w'Incuti z'Abakobwa (GFS)",
+    "updates": "Amakuru y'ibikorwa ({{n}})",
+    "hide_updates": "Hisha amakuru"
   },
   "register": {
     "title": "Fungura konti yawe y'umukirisitu",
@@ -47,7 +49,12 @@
     "archdeaconries_title": "Archdeaconries zacu",
     "archdeacon": "Archdeacon",
     "soon": "Andi makuru ku Diyoseze yacu azashyirwa hano vuba.",
-    "contact_cta": "Twandikire"
+    "contact_cta": "Twandikire",
+    "leaders_bishop": "Umushumba wacu",
+    "leaders_archdeacons": "Archdeacons",
+    "leaders_unions": "Mothers' Union na Fathers' Union",
+    "leaders_pastors": "Abashumba bacu",
+    "pastor_of": "Umushumba wa {{parish}}"
   },
   "contact": {
     "title": "Twandikire",
@@ -70,5 +77,9 @@
     "too_many": "Mwohereje ubutumwa bwinshi. Mwongere mugerageze nyuma.",
     "parish_title": "Telefoni z'amaparoki",
     "soon": "Amakuru yo kutugeraho azashyirwa hano vuba."
+  },
+  "parish": {
+    "leaders": "Abashumba n'abayobozi",
+    "group_news": "Amakuru y'amatsinda yacu"
   }
 }

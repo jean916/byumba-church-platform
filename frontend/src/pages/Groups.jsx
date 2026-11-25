@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import client from '../api/client'
+import GroupUpdateCard from '../components/GroupUpdateCard'
+import { useGroupTypeLogos } from '../api/useGroupTypeLogos'
 
 export default function Groups() {
   const { t } = useTranslation()
   const [groups, setGroups] = useState([])
   const [expandedId, setExpandedId] = useState(null)
+  const [updatesByGroup, setUpdatesByGroup] = useState({})
+  const typeLogos = useGroupTypeLogos()
+  const [openUpdatesId, setOpenUpdatesId] = useState(null)
 
   useEffect(() => {
     client.get('/content/groups/').then(r => setGroups(r.data)).catch(() => {})
+    client.get('/content/group-updates/').then(r => {
+      const byGroup = {}
+      r.data.forEach(u => { (byGroup[u.group] = byGroup[u.group] || []).push(u) })
+      setUpdatesByGroup(byGroup)
+    }).catch(() => {})
   }, [])
 
   return (
@@ -22,12 +32,31 @@ export default function Groups() {
               <img src={g.photo} alt={g.name} style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }} />
             )}
             <div style={{ padding: '20px' }}>
-              <h3>{g.name}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                {(g.logo || typeLogos[g.group_type]) && <img src={g.logo || typeLogos[g.group_type]} alt={`${g.name} logo`} loading="lazy" style={{ height: '52px', width: '52px', objectFit: 'contain', flexShrink: 0 }} />}
+                <h3 style={{ margin: 0 }}>{g.name}</h3>
+              </div>
               <p style={{ margin: 0 }}>{t(`groups.${g.group_type}`)}</p>
               {g.leader_name && (
                 <p style={{ margin: 0, fontSize: '0.9rem' }}>
                   {g.group_type === 'CHOIR' ? 'President' : 'Leader'}: {g.leader_name}
                 </p>
+              )}
+
+              {updatesByGroup[g.id]?.length > 0 && (
+                <>
+                  <button
+                    onClick={() => setOpenUpdatesId(openUpdatesId === g.id ? null : g.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--color-indigo-700)', textDecoration: 'underline', cursor: 'pointer', padding: 0, marginTop: '10px', fontSize: '0.9rem', display: 'block' }}
+                  >
+                    {openUpdatesId === g.id ? t('groups.hide_updates') : t('groups.updates', { n: updatesByGroup[g.id].length })}
+                  </button>
+                  {openUpdatesId === g.id && (
+                    <div style={{ display: 'grid', gap: '12px', marginTop: '12px' }}>
+                      {updatesByGroup[g.id].slice(0, 5).map(u => <GroupUpdateCard key={u.id} update={u} />)}
+                    </div>
+                  )}
+                </>
               )}
 
               {g.group_type === 'CHOIR' && (

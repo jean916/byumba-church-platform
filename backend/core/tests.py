@@ -308,3 +308,137 @@ class AboutAndContact(BaseCase):
         self.diocese.save()
         codes = [self.client.post(c, self.message(), format="json").status_code for _ in range(7)]
         self.assertIn(429, codes)
+
+
+import io
+import shutil
+import tempfile
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+
+def tiny_png(name="pic.png"):
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new("RGB", (4, 4), "navy").save(buf, "PNG")
+    return SimpleUploadedFile(name, buf.getvalue(), content_type="image/png")
+
+
+class LeadersLogosAndUpdates(BaseCase):
+    def setUp(self):
+        super().setUp()
+        self._media = tempfile.mkdtemp()
+        self._override = override_settings(MEDIA_ROOT=self._media)
+        self._override.enable()
+        self.addCleanup(lambda: (self._override.disable(), shutil.rmtree(self._media, ignore_errors=True)))
+
+    def clergy(self, **extra):
+        return {"diocese": self.diocese.id, "name": "Rev. Test", "level": "PARISH_PASTOR", "parish": self.p1.id, **extra}
+
+    # ---- leaders / pastors
+    def test_parish_admin_manages_only_own_parish_pastors(self):
+        c = self.as_user(self.admin1)
+        r = c.post("/api/dioceses/clergy/", {**self.clergy(contact_phone="0788123456", notes="Serving since 2020"), "photo": tiny_png()}, format="multipart")
+        self.assertEqual(r.status_code, 201, r.data)
+        pid = r.data["id"]
+        self.assertEqual(c.patch(f"/api/dioceses/clergy/{pid}/", {"notes": "updated"}, format="json").status_code, 200)
+        self.assertEqual(c.post("/api/dioceses/clergy/", self.clergy(parish=self.p2.id), format="json").status_code, 403)       # other parish
+        self.assertEqual(c.post("/api/dioceses/clergy/", self.clergy(parish=None), format="json").status_code, 403)             # diocese-wide
+        for level in ("BISHOP", "ARCHDEACON", "MOTHERS_UNION_LEADER", "FATHERS_UNION_LEADER"):
+            self.assertEqual(c.post("/api/dioceses/clergy/", self.clergy(level=level), format="json").status_code, 403, level)
+        self.assertEqual(c.patch(f"/api/dioceses/clergy/{pid}/", {"level": "BISHOP"}, format="json").status_code, 403)         # no self-promotion
+        other = self.as_user(self.dioc_admin).post("/api/dioceses/clergy/", self.clergy(parish=self.p2.id, name="Other"), format="json").data["id"]
+        self.assertEqual(c.delete(f"/api/dioceses/clergy/{other}/").status_code, 403)
+        self.assertEqual(c.delete(f"/api/dioceses/clergy/{pid}/").status_code, 204)
+
+    def test_diocese_office_adds_diocesan_leaders_and_public_can_read_them(self):
+        d = self.as_user(self.dioc_admin)
+        for level in ("BISHOP", "MOTHERS_UNION_LEADER", "FATHERS_UNION_LEADER"):
+            self.assertEqual(d.post("/api/dioceses/clergy/", self.clergy(level=level, parish=None, name=level), format="json").status_code, 201, level)
+        d.post("/api/dioceses/clergy/", self.clergy(name="Pastor K"), format="json")
+        everyone = self.client.get("/api/dioceses/clergy/?diocese=byumba").data
+        self.assertEqual(len(everyone), 4)
+        self.assertIn("Mothers' Union leader (diocese)", {c["level_display"] for c in everyone})
+        only_p1 = self.client.get("/api/dioceses/clergy/?parish=kibali").data
+        self.assertEqual([c["name"] for c in only_p1], ["Pastor K"])
+
+    def test_members_and_leaders_cannot_edit_clergy(self):
+        for who in (self.alice, self.leader1):
+            self.assertEqual(self.as_user(who).post("/api/dioceses/clergy/", self.clergy(), format="json").status_code, 403)
+
+    # ---- group logos
+    def test_group_logo_upload_scoped_to_own_parish(self):
+        c = self.as_user(self.admin1)
+        r = c.patch(f"/api/content/groups/{self.g1.id}/", {"logo": tiny_png("logo.png")}, format="multipart")
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertTrue(r.data["logo"])
+        self.assertEqual(c.patch(f"/api/content/groups/{self.g2.id}/", {"logo": tiny_png("logo.png")}, format="multipart").status_code, 403)
+        self.assertEqual(self.as_user(self.alice).patch(f"/api/content/groups/{self.g1.id}/", {"logo": tiny_png("x.png")}, format="multipart").status_code, 403)
+
+    # ---- group updates (meeting reports)
+    def report(self, group, **extra):
+        return {"group": group.id, "title": "Annual meeting", "text": "We met and prayed.", "event_date": "2026-11-08", **extra}
+
+    def test_group_leader_posts_reports_for_own_group_only(self):
+        c = self.as_user(self.leader1)
+        r = c.post("/api/content/group-updates/", self.report(self.g1), format="json")
+        self.assertEqual(r.status_code, 201, r.data)
+        self.assertNotIn("created_by", r.data)
+        self.assertEqual(c.post("/api/content/group-updates/", self.report(self.g1b), format="json").status_code, 403)  # another group, same parish
+        self.assertEqual(c.post("/api/content/group-updates/", self.report(self.g2), format="json").status_code, 403)   # another parish
+        self.assertEqual(self.as_user(self.alice).post("/api/content/group-updates/", self.report(self.g1), format="json").status_code, 403)
+        self.assertEqual(self.client.post("/api/content/group-updates/", self.report(self.g1), format="json").status_code, 401)
+
+    def test_report_photos_nested_limited_and_scoped(self):
+        c = self.as_user(self.leader1)
+        uid = c.post("/api/content/group-updates/", self.report(self.g1), format="json").data["id"]
+        for i in range(12):
+            r = c.post("/api/content/group-update-photos/", {"update": uid, "image": tiny_png(f"p{i}.png"), "caption": f"c{i}"}, format="multipart")
+            self.assertEqual(r.status_code, 201, r.data)
+        self.assertEqual(c.post("/api/content/group-update-photos/", {"update": uid, "image": tiny_png("p13.png")}, format="multipart").status_code, 400)
+        pub = self.client.get(f"/api/content/group-updates/?group={self.g1.id}").data
+        self.assertEqual((len(pub), len(pub[0]["photos"]), pub[0]["group_name"]), (1, 12, "Choir 1"))
+        # an outsider (parish 2 admin, a member) cannot add to or delete this report's photos
+        bob_admin = self._user("admin2", "PARISH_ADMIN", parish=self.p2, diocese=self.diocese)
+        photo_id = pub[0]["photos"][0]["id"]
+        for who in (bob_admin, self.alice):
+            cl = self.as_user(who)
+            self.assertEqual(cl.post("/api/content/group-update-photos/", {"update": uid, "image": tiny_png("z.png")}, format="multipart").status_code, 403)
+            self.assertEqual(cl.delete(f"/api/content/group-update-photos/{photo_id}/").status_code, 403)
+            self.assertEqual(cl.delete(f"/api/content/group-updates/{uid}/").status_code, 403)
+        self.assertEqual(self.as_user(self.admin1).delete(f"/api/content/group-updates/{uid}/").status_code, 204)  # own parish admin can
+
+    def test_reports_filter_by_parish_and_limit(self):
+        for n in range(3):
+            self.as_user(self.admin1).post("/api/content/group-updates/", self.report(self.g1, title=f"R{n}", event_date=f"2026-11-0{n+1}"), format="json")
+        self.as_user(self._user("admin2", "PARISH_ADMIN", parish=self.p2, diocese=self.diocese)).post("/api/content/group-updates/", self.report(self.g2), format="json")
+        self.assertEqual(len(self.client.get("/api/content/group-updates/?parish=kibali").data), 3)
+        self.assertEqual(len(self.client.get("/api/content/group-updates/?limit=2").data), 2)
+        self.assertEqual(self.client.get("/api/content/group-updates/?parish=kibali").data[0]["title"], "R2")  # newest meeting first
+
+
+class GroupTypeLogos(BaseCase):
+    def setUp(self):
+        super().setUp()
+        self._media = tempfile.mkdtemp()
+        self._override = override_settings(MEDIA_ROOT=self._media)
+        self._override.enable()
+        self.addCleanup(lambda: (self._override.disable(), shutil.rmtree(self._media, ignore_errors=True)))
+
+    def test_diocese_office_manages_type_logos_everyone_reads(self):
+        d = self.as_user(self.dioc_admin)
+        r = d.post("/api/content/group-type-logos/", {"diocese": self.diocese.id, "group_type": "MOTHERS_UNION", "logo": tiny_png("mu.png")}, format="multipart")
+        self.assertEqual(r.status_code, 201, r.data)
+        again = d.post("/api/content/group-type-logos/", {"diocese": self.diocese.id, "group_type": "MOTHERS_UNION", "logo": tiny_png("mu2.png")}, format="multipart")
+        self.assertEqual(again.status_code, 400)  # one logo per type: replace it instead
+        self.assertEqual(d.patch(f"/api/content/group-type-logos/{r.data['id']}/", {"logo": tiny_png("new.png")}, format="multipart").status_code, 200)
+        self.assertEqual(d.post("/api/content/group-type-logos/", {"diocese": self.other_diocese.id, "group_type": "CHOIR", "logo": tiny_png("x.png")}, format="multipart").status_code, 403)
+        pub = self.client.get("/api/content/group-type-logos/?diocese=byumba").data
+        self.assertEqual([(x["group_type"], bool(x["logo"])) for x in pub], [("MOTHERS_UNION", True)])
+        self.assertEqual(d.delete(f"/api/content/group-type-logos/{r.data['id']}/").status_code, 204)
+
+    def test_others_cannot_change_type_logos(self):
+        body = {"diocese": self.diocese.id, "group_type": "CHOIR", "logo": tiny_png("c.png")}
+        for who in (self.admin1, self.leader1, self.alice):
+            self.assertEqual(self.as_user(who).post("/api/content/group-type-logos/", dict(body, logo=tiny_png("c.png")), format="multipart").status_code, 403)
+        self.assertEqual(self.client.post("/api/content/group-type-logos/", dict(body, logo=tiny_png("c.png")), format="multipart").status_code, 401)
