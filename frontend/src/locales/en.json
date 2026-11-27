@@ -16,7 +16,18 @@
     "cta_parishes": "Find your parish",
     "cta_register": "Register as a member",
     "latest_news": "Latest announcements",
-    "our_groups": "Our groups & unions"
+    "our_groups": "Our groups & unions",
+    "find_title": "Find your parish",
+    "find_placeholder": "Type a parish name or place…",
+    "find_hint": "Start typing to see service times and contact details.",
+    "find_none": "No parish found. Try another spelling, or",
+    "all_parishes": "see all parishes",
+    "service_times": "Service times",
+    "upcoming_events": "Upcoming events",
+    "no_events": "No events scheduled right now.",
+    "all_events": "All events",
+    "group_news": "From our groups",
+    "all_groups": "All groups"
   },
   "groups": {
     "MOTHERS_UNION": "Mothers' Union",

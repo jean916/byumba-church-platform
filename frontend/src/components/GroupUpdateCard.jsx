@@ -1,10 +1,10 @@
 // A meeting report posted by a group: date, title, text and a photo grid.
-export default function GroupUpdateCard({ update, showGroup = false }) {
+export default function GroupUpdateCard({ update, showGroup = false, parishName }) {
   const date = new Date(`${update.event_date}T00:00:00`).toLocaleDateString('en-GB')
   return (
     <div className="card">
       <p style={{ margin: '0 0 4px', fontSize: '0.82rem', fontWeight: 600 }}>
-        {showGroup && <>{update.group_name} · </>}{date}
+        {showGroup && <>{update.group_name}{parishName && ` (${parishName})`} · </>}{date}
       </p>
       <h3 style={{ margin: '0 0 8px' }}>{update.title}</h3>
       {update.text && <p style={{ whiteSpace: 'pre-line', marginBottom: update.photos?.length ? '12px' : 0 }}>{update.text}</p>}

@@ -15,7 +15,18 @@
     "cta_parishes": "Shakisha paroki yawe",
     "cta_register": "Iyandikishe nk'umukirisitu",
     "latest_news": "Amatangazo aheruka",
-    "our_groups": "Amatsinda yacu"
+    "our_groups": "Amatsinda yacu",
+    "find_title": "Shakisha paroki yawe",
+    "find_placeholder": "Andika izina rya paroki cyangwa ahantu…",
+    "find_hint": "Tangira wandike urebe amasaha y'amateraniro n'uko wabageraho.",
+    "find_none": "Nta paroki yabonetse. Gerageza irindi zina, cyangwa",
+    "all_parishes": "reba amaparoki yose",
+    "service_times": "Amasaha y'amateraniro",
+    "upcoming_events": "Ibikorwa biri imbere",
+    "no_events": "Nta bikorwa biteganyijwe ubu.",
+    "all_events": "Ibikorwa byose",
+    "group_news": "Amakuru y'amatsinda yacu",
+    "all_groups": "Amatsinda yose"
   },
   "groups": {
     "MOTHERS_UNION": "Umuryango w'Ababyeyi (Mothers' Union)",

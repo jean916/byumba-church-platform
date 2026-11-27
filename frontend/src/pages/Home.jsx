@@ -4,21 +4,31 @@ import { useTranslation } from 'react-i18next'
 import client from '../api/client'
 import { useGroupTypeLogos } from '../api/useGroupTypeLogos'
 import ArchDivider from '../components/ArchDivider'
+import ParishFinder from '../components/ParishFinder'
+import GroupUpdateCard from '../components/GroupUpdateCard'
 import { useDiocese } from '../context/DioceseContext'
 
 export default function Home() {
   const { t, i18n } = useTranslation()
   const [announcements, setAnnouncements] = useState([])
-  const [groups, setGroups] = useState([])
+  const [events, setEvents] = useState([])
+  const [groupNews, setGroupNews] = useState([])
 
   useEffect(() => {
     client.get('/content/announcements/').then(r => setAnnouncements(r.data.slice(0, 3))).catch(() => {})
-    client.get('/content/groups/').then(r => setGroups(r.data)).catch(() => {})
+    client.get('/content/events/').then(r => {
+      const now = new Date()
+      setEvents(r.data.filter(e => new Date(e.start_time) >= now).sort((a, b) => new Date(a.start_time) - new Date(b.start_time)).slice(0, 3))
+    }).catch(() => {})
+    client.get('/content/group-updates/?limit=3').then(r => setGroupNews(r.data)).catch(() => {})
   }, [])
 
   const groupTypes = ['MOTHERS_UNION', 'FATHERS_UNION', 'YOUTH_UNION', 'CHOIR', 'CHILDREN', 'GFS']
   const diocese = useDiocese()
   const typeLogos = useGroupTypeLogos()
+  const parishes = diocese?.parishes || []
+  const parishName = id => parishes.find(p => p.id === id)?.name
+  const pick = (en, rw) => (i18n.language === 'rw' && rw ? rw : en)
 
   return (
     <>
@@ -76,6 +86,32 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="container" style={{ padding: '48px 24px 8px', maxWidth: '860px' }}>
+        <ParishFinder parishes={parishes} />
+      </section>
+
+      <section className="container" style={{ padding: '40px 24px 8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+          <h2 style={{ margin: 0 }}>{t('home.upcoming_events')}</h2>
+          <Link to="/events">{t('home.all_events')} →</Link>
+        </div>
+        {events.length === 0 && <p style={{ marginTop: '16px' }}>{t('home.no_events')}</p>}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '20px' }}>
+          {events.map(e => {
+            const when = new Date(e.start_time)
+            return (
+              <div key={e.id} className="card">
+                <p style={{ margin: '0 0 4px', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {when.toLocaleDateString('en-GB')} · {when.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <h3 style={{ margin: 0 }}>{pick(e.title_en, e.title_rw)}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{[parishName(e.parish), e.location].filter(Boolean).join(' · ')}</p>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
       <section className="container" style={{ padding: '64px 24px' }}>
         <h2>{t('home.our_groups')}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '24px' }}>
@@ -90,6 +126,18 @@ export default function Home() {
         </div>
       </section>
 
+      {groupNews.length > 0 && (
+        <section className="container" style={{ padding: '0 24px 64px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+            <h2 style={{ margin: 0 }}>{t('home.group_news')}</h2>
+            <Link to="/groups">{t('home.all_groups')} →</Link>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '20px' }}>
+            {groupNews.map(u => <GroupUpdateCard key={u.id} update={u} showGroup parishName={parishName(u.parish)} />)}
+          </div>
+        </section>
+      )}
+
       <section style={{ background: 'var(--color-parchment)', padding: '64px 24px' }}>
         <div className="container">
           <h2>{t('home.latest_news')}</h2>
@@ -102,6 +150,21 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="container" style={{ padding: '48px 24px' }}>
+        <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px 40px', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ flex: '1 1 260px' }}>
+            <h2 style={{ margin: '0 0 6px' }}>{t('contact.title')}</h2>
+            {diocese?.office_address && <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{diocese.office_address}</p>}
+            {diocese?.office_hours && <p style={{ margin: '4px 0 0', fontSize: '0.9rem' }}>{diocese.office_hours}</p>}
+          </div>
+          <div style={{ overflowWrap: 'anywhere' }}>
+            {diocese?.contact_phone && <p style={{ margin: 0 }}><a href={`tel:${diocese.contact_phone}`}>{diocese.contact_phone}</a></p>}
+            {diocese?.contact_email && <p style={{ margin: '4px 0 0' }}><a href={`mailto:${diocese.contact_email}`}>{diocese.contact_email}</a></p>}
+          </div>
+          <Link to="/contact" className="btn btn-gold">{t('about.contact_cta')}</Link>
         </div>
       </section>
     </>
